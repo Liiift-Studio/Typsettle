@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		title: "Settle — Page-load text animation to optical equilibrium",
 		description: "Text enters from randomised spacing and settles into place. A typographic page-load animation.",
-		url: "https://settle.liiift.studio",
+		url: "https://typsettle.com",
 		siteName: "Settle",
 		type: "website",
 	},
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 		title: "Settle — Page-load text animation to optical equilibrium",
 		description: "Text enters from randomised spacing and settles into place. A typographic page-load animation.",
 	},
-	metadataBase: new URL("https://settle.liiift.studio"),
+	metadataBase: new URL("https://typsettle.com"),
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -29,7 +29,7 @@ export default async function Image() {
 						<span>Zero dependencies</span><span style={{ opacity: 0.4 }}>·</span>
 						<span>React + Vanilla JS</span>
 					</div>
-					<div style={{ fontSize: 13, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.04em' }}>settle.liiift.studio</div>
+					<div style={{ fontSize: 13, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.04em' }}>typsettle.com</div>
 				</div>
 			</div>
 		),
