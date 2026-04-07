@@ -1,5 +1,5 @@
 // settle/src/react/SettleText.tsx — React component wrapper
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 import { useSettle } from './useSettle'
 import type { SettleOptions } from '../core/types'
 
@@ -7,7 +7,7 @@ interface SettleTextProps extends SettleOptions {
 	children: React.ReactNode
 	className?: string
 	style?: React.CSSProperties
-	as?: keyof JSX.IntrinsicElements
+	as?: React.ElementType
 }
 
 /**
@@ -17,7 +17,7 @@ export const SettleText = forwardRef<HTMLElement, SettleTextProps>(
 	function SettleText({ children, className, style, as: Tag = 'p', ...options }, _ref) {
 		const innerRef = useSettle(options)
 		return (
-			<Tag ref={innerRef as React.Ref<HTMLParagraphElement>} className={className} style={style}>
+			<Tag ref={innerRef as React.Ref<HTMLElement>} className={className} style={style}>
 				{children}
 			</Tag>
 		)
