@@ -59,7 +59,7 @@ export default function Home() {
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Drop-in component</p>
-						<CodeBlock code={`import { SettleText } from 'settle'
+						<CodeBlock code={`import { SettleText } from '@liiift-studio/settle'
 
 <SettleText spread={0.04} duration={800} stagger={80}>
   Your paragraph text here...
@@ -67,7 +67,7 @@ export default function Home() {
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Hook</p>
-						<CodeBlock code={`import { useSettle } from 'settle'
+						<CodeBlock code={`import { useSettle } from '@liiift-studio/settle'
 
 const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
 <p ref={ref}>{children}</p>`} />
