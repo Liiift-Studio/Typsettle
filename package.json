@@ -1,7 +1,7 @@
 {
-	"name": "@liiift-studio/settle",
+	"name": "@liiift-studio/typsettle",
 	"version": "0.0.1",
-	"description": "Page-load animation where per-line tracking starts at random offsets and eases to optical equilibrium \u2014 like watching a compositor tune a paragraph",
+	"description": "Page-load animation where per-line tracking starts at random offsets and eases to optical equilibrium — like watching a compositor tune a paragraph",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
