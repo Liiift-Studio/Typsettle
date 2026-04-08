@@ -1,6 +1,7 @@
 import Demo from "@/components/Demo"
 import CopyInstall from "@/components/CopyInstall"
 import CodeBlock from "@/components/CodeBlock"
+import ToolDirectory from "@/components/ToolDirectory"
 import { version } from "../../../package.json"
 
 export default function Home() {
@@ -89,9 +90,12 @@ const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
 			</section>
 
 			{/* Footer */}
-			<footer className="w-full max-w-2xl lg:max-w-5xl flex justify-between text-xs opacity-50 pt-8 border-t border-white/10">
-				<span>settle v{version}</span>
+			<footer className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6 pt-8 border-t border-white/10 text-xs">
+				<ToolDirectory current="typsettle" />
+				<div className="flex justify-between opacity-50">
+				<span>typsettle v{version}</span>
 				<a href="https://liiift.studio" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Liiift Studio</a>
+				</div>
 			</footer>
 
 		</main>
