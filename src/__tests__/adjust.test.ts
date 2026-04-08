@@ -193,4 +193,74 @@ describe('settle', () => {
 		tempEl.innerHTML = cleaned
 		expect(tempEl.querySelectorAll(`.${SETTLE_CLASSES.line}`).length).toBe(0)
 	})
+
+	it('spread:0 → all lines have letter-spacing of 0em', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, { spread: 0 })
+		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBeGreaterThan(0)
+		lines.forEach((line) => {
+			expect(line.style.letterSpacing).toBe('0em')
+		})
+	})
+
+	it('custom duration appears in the transition style', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, { duration: 1234 })
+		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBeGreaterThan(0)
+		const style = lines[0].getAttribute('style') ?? ''
+		expect(style).toContain('1234ms')
+	})
+
+	it('custom easing appears in the transition style', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, { easing: 'linear' })
+		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBeGreaterThan(0)
+		const style = lines[0].getAttribute('style') ?? ''
+		expect(style).toContain('linear')
+	})
+
+	it('transition style contains letter-spacing property', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, {})
+		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBeGreaterThan(0)
+		const style = lines[0].getAttribute('style') ?? ''
+		expect(style).toContain('letter-spacing')
+	})
+
+	it('single word: exactly 1 line span produced', () => {
+		const el = makeElement('Hello')
+		const original = getCleanHTML(el)
+		applySettle(el, original, {})
+		const lines = el.querySelectorAll(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBe(1)
+	})
+
+	it('applying twice from same original gives same line count', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, {})
+		const count1 = el.querySelectorAll(`.${SETTLE_CLASSES.line}`).length
+		wordIndex = 0
+		applySettle(el, original, {})
+		const count2 = el.querySelectorAll(`.${SETTLE_CLASSES.line}`).length
+		expect(count2).toBe(count1)
+	})
+
+	it('default duration (800ms) appears in transition style when not specified', () => {
+		const el = makeElement('one two three four five six seven eight nine')
+		const original = getCleanHTML(el)
+		applySettle(el, original, {})
+		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+		expect(lines.length).toBeGreaterThan(0)
+		const style = lines[0].getAttribute('style') ?? ''
+		expect(style).toContain('800ms')
+	})
 })
