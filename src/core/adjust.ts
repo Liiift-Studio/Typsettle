@@ -1,6 +1,41 @@
 // settle/src/core/adjust.ts — framework-agnostic settle animation algorithm
 import { SETTLE_CLASSES, type SettleOptions } from './types'
 
+// ─── Pretext (canvas line detection) ─────────────────────────────────────────
+
+type PretextModule = {
+	prepareWithSegments: (text: string, font: string) => unknown
+	layoutWithLines: (prepared: unknown, maxWidth: number, lineHeight: number) => { lines: { text: string }[] }
+}
+
+let _pretext: PretextModule | null = null
+let _pretextLoading = false
+
+function tryLoadPretext(): void {
+	if (_pretext !== null || _pretextLoading) return
+	_pretextLoading = true
+	import('@chenglou/pretext' as string)
+		.then((m) => { _pretext = m as PretextModule })
+		.catch(() => {
+			console.warn('[typsettle] canvas lineDetection requires @chenglou/pretext — falling back to BCR')
+		})
+}
+
+type PreparedEntry = { originalHTML: string; prepared: unknown }
+const pretextCache = new WeakMap<HTMLElement, PreparedEntry>()
+
+function getCanvasFont(el: HTMLElement): string {
+	const s = getComputedStyle(el)
+	const family = s.fontFamily.split(',')[0].replace(/['"]/g, '').trim()
+	return `${s.fontWeight} ${s.fontSize} ${family}`
+}
+
+function getLineHeightPx(el: HTMLElement): number {
+	const s = getComputedStyle(el)
+	const lh = parseFloat(s.lineHeight)
+	return isNaN(lh) ? parseFloat(s.fontSize) * 1.2 : lh
+}
+
 /** Resolved defaults applied when options are omitted */
 const DEFAULTS = {
 	spread: 0.04,
@@ -134,24 +169,60 @@ export function applySettle(
 		return
 	}
 
-	// --- Pass 3: Line grouping via BCR.top ---
-	// Batch all layout reads before writes to avoid layout thrashing.
-	const wordTops = wordSpans.map((w) => w.getBoundingClientRect().top)
+	// --- Pass 3: Line grouping ---
+	// Canvas path: pretext arithmetic (no forced reflow on resize).
+	// BCR path: getBoundingClientRect — ground truth for actual browser layout.
 
-	// Group word spans into lines by matching BCR.top values.
+	const lineDetection = options.lineDetection ?? 'bcr'
+	if (lineDetection === 'canvas') tryLoadPretext()
+
+	const useCanvas = lineDetection === 'canvas' && _pretext !== null
+
 	const lines: HTMLElement[][] = []
-	let currentTop = wordTops[0]
-	let currentLine: HTMLElement[] = []
 
-	for (let i = 0; i < wordSpans.length; i++) {
-		if (wordTops[i] !== currentTop) {
-			lines.push(currentLine)
-			currentLine = []
-			currentTop = wordTops[i]
+	if (useCanvas) {
+		const cached = pretextCache.get(element)
+		let prepared: unknown
+		if (cached && cached.originalHTML === originalHTML) {
+			prepared = cached.prepared
+		} else {
+			prepared = _pretext!.prepareWithSegments(element.textContent ?? '', getCanvasFont(element))
+			pretextCache.set(element, { originalHTML, prepared })
 		}
-		currentLine.push(wordSpans[i])
+		const { lines: pretextLines } = _pretext!.layoutWithLines(prepared, element.offsetWidth, getLineHeightPx(element))
+
+		let si = 0
+		for (let li = 0; li < pretextLines.length && si < wordSpans.length; li++) {
+			const target = pretextLines[li].text.replace(/\s+/g, ' ').trim()
+			const group: HTMLElement[] = []
+			let acc = ''
+			while (si < wordSpans.length) {
+				const word = (wordSpans[si].textContent ?? '').replace(/\s+/g, ' ').trim()
+				acc = acc ? acc + ' ' + word : word
+				group.push(wordSpans[si])
+				si++
+				if (acc === target) break
+			}
+			if (group.length > 0) lines.push(group)
+		}
+		while (si < wordSpans.length) {
+			lines[lines.length - 1]?.push(wordSpans[si++])
+		}
+	} else {
+		// BCR path — batch all reads before any writes
+		const wordTops = wordSpans.map((w) => w.getBoundingClientRect().top)
+		let currentTop = wordTops[0]
+		let currentLine: HTMLElement[] = []
+		for (let i = 0; i < wordSpans.length; i++) {
+			if (wordTops[i] !== currentTop) {
+				lines.push(currentLine)
+				currentLine = []
+				currentTop = wordTops[i]
+			}
+			currentLine.push(wordSpans[i])
+		}
+		lines.push(currentLine)
 	}
-	lines.push(currentLine)
 
 	// --- Pass 4: Assemble line spans ---
 	// Each line becomes an inline-block span with white-space:nowrap and a random
