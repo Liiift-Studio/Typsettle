@@ -18,7 +18,8 @@ function Slider({ label, value, min, max, step, onChange }: { label: string; val
 	)
 }
 
-function CompareButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+/** Before/after toggle — left half = without effect, right half filled = with effect */
+function BeforeAfterToggle({ active, onClick }: { active: boolean; onClick: () => void }) {
 	return (
 		<button
 			onClick={onClick}
@@ -34,10 +35,10 @@ function CompareButton({ active, onClick }: { active: boolean; onClick: () => vo
 				cursor: 'pointer', transition: 'opacity 0.15s ease',
 			}}
 		>
-			<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-				<circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1"/>
-				<path d="M7 1.5 A5.5 5.5 0 0 1 7 12.5 Z" fill="currentColor"/>
-				<line x1="7" y1="1.5" x2="7" y2="12.5" stroke="currentColor" strokeWidth="0.75" opacity="0.5"/>
+			<svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+				<rect x="0.5" y="0.5" width="13" height="9" rx="1" stroke="currentColor" strokeWidth="1"/>
+				<line x1="7" y1="0.5" x2="7" y2="9.5" stroke="currentColor" strokeWidth="1"/>
+				<rect x="8" y="1.5" width="5" height="7" fill="currentColor"/>
 			</svg>
 		</button>
 	)
@@ -48,7 +49,7 @@ export default function Demo() {
 	const [duration, setDuration] = useState(800)
 	const [stagger, setStagger] = useState(80)
 	const [key, setKey] = useState(0)
-	const [comparing, setComparing] = useState(false)
+	const [beforeAfter, setComparing] = useState(false)
 
 	const dSpread = useDeferredValue(spread)
 	const dDuration = useDeferredValue(duration)
@@ -87,14 +88,14 @@ export default function Demo() {
 						</SettleText>
 					))}
 				</div>
-				{comparing && (
+				{beforeAfter && (
 					<div aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: '100%', opacity: 0.25, pointerEvents: 'none' }} className="flex flex-col gap-5">
 						{PARAGRAPHS.map((para, i) => (
 							<p key={i} style={{ ...sampleStyle, margin: 0 }}>{para}</p>
 						))}
 					</div>
 				)}
-				<CompareButton active={comparing} onClick={() => setComparing(v => !v)} />
+				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
 			<p className="text-xs opacity-50 italic mt-6">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
 		</div>
