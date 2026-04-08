@@ -23,6 +23,7 @@ export default function Demo() {
 	const [duration, setDuration] = useState(800)
 	const [stagger, setStagger] = useState(80)
 	const [key, setKey] = useState(0)
+	const [comparing, setComparing] = useState(false)
 
 	const dSpread = useDeferredValue(spread)
 	const dDuration = useDeferredValue(duration)
@@ -52,23 +53,26 @@ export default function Demo() {
 					↺ Play again
 				</button>
 				<span className="text-xs opacity-50">Reload to see the entrance animation, or press Play again.</span>
+				<span className="text-xs uppercase tracking-widest opacity-50 ml-4">Compare</span>
+				<button onClick={() => setComparing(v => !v)} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: comparing ? 1 : 0.5, background: comparing ? 'var(--btn-bg)' : 'transparent' }}>without</button>
 			</div>
-			<div className="flex flex-col gap-5">
-				{PARAGRAPHS.map((para, i) => (
-					<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} style={sampleStyle}>
-						{para}
-					</SettleText>
-				))}
+			<div className="relative">
+				<div className="flex flex-col gap-5">
+					{PARAGRAPHS.map((para, i) => (
+						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} style={sampleStyle}>
+							{para}
+						</SettleText>
+					))}
+				</div>
+				{comparing && (
+					<div aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: '100%', opacity: 0.25, pointerEvents: 'none' }} className="flex flex-col gap-5">
+						{PARAGRAPHS.map((para, i) => (
+							<p key={i} style={{ ...sampleStyle, margin: 0 }}>{para}</p>
+						))}
+					</div>
+				)}
 			</div>
 			<p className="text-xs opacity-50 italic mt-6">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
-			<div className="flex justify-end mt-8">
-				<div className="w-72 flex flex-col gap-2">
-					<span className="text-xs uppercase tracking-widest opacity-50">without</span>
-					<div className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.15)" }}>
-						<p style={{ ...sampleStyle, fontSize: "0.7rem", lineHeight: "1.8" }} className="opacity-60">{PARAGRAPHS[0]}</p>
-					</div>
-				</div>
-			</div>
 		</div>
 	)
 }
