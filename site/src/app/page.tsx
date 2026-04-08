@@ -74,6 +74,14 @@ const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
 <p ref={ref}>{children}</p>`} />
 					</div>
 					<div className="flex flex-col gap-3">
+						<p className="opacity-50">Vanilla JS</p>
+						<CodeBlock code={`import { applySettle, getCleanHTML } from '@liiift-studio/typsettle'
+
+const el = document.querySelector('p')
+const original = getCleanHTML(el)
+applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })`} />
+					</div>
+					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
 						<table className="w-full text-xs">
 							<thead><tr className="opacity-50 text-left"><th className="pb-2 pr-6 font-normal">Option</th><th className="pb-2 pr-6 font-normal">Default</th><th className="pb-2 font-normal">Description</th></tr></thead>

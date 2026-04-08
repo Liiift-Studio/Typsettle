@@ -64,7 +64,7 @@ export default function Demo() {
 	}
 
 	return (
-		<div className="w-full">
+		<div className="w-full" style={{ overflow: 'hidden' }}>
 			<div className="grid grid-cols-3 gap-6 mb-6">
 				<Slider label="Spread" value={spread} min={0.005} max={0.12} step={0.005} onChange={setSpread} />
 				<Slider label="Duration (ms)" value={duration} min={200} max={2000} step={50} onChange={setDuration} />
@@ -80,7 +80,7 @@ export default function Demo() {
 				</button>
 				<span className="text-xs opacity-50">Reload to see the entrance animation, or press Play again.</span>
 			</div>
-			<div className="relative pb-8" style={{ overflow: 'hidden' }}>
+			<div className="relative pb-8">
 				<div className="flex flex-col gap-5">
 					{PARAGRAPHS.map((para, i) => (
 						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} style={sampleStyle}>
