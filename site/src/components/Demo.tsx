@@ -18,6 +18,31 @@ function Slider({ label, value, min, max, step, onChange }: { label: string; val
 	)
 }
 
+function CompareButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+	return (
+		<button
+			onClick={onClick}
+			aria-label="Toggle before/after comparison"
+			title={active ? 'Hide comparison' : 'Compare without effect'}
+			style={{
+				position: 'absolute', bottom: 0, right: 0,
+				width: 32, height: 32, borderRadius: '50%',
+				border: '1px solid currentColor',
+				opacity: active ? 0.8 : 0.25,
+				background: 'transparent',
+				display: 'flex', alignItems: 'center', justifyContent: 'center',
+				cursor: 'pointer', transition: 'opacity 0.15s ease',
+			}}
+		>
+			<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+				<circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1"/>
+				<path d="M7 1.5 A5.5 5.5 0 0 1 7 12.5 Z" fill="currentColor"/>
+				<line x1="7" y1="1.5" x2="7" y2="12.5" stroke="currentColor" strokeWidth="0.75" opacity="0.5"/>
+			</svg>
+		</button>
+	)
+}
+
 export default function Demo() {
 	const [spread, setSpread] = useState(0.04)
 	const [duration, setDuration] = useState(800)
@@ -53,10 +78,8 @@ export default function Demo() {
 					↺ Play again
 				</button>
 				<span className="text-xs opacity-50">Reload to see the entrance animation, or press Play again.</span>
-				<span className="text-xs uppercase tracking-widest opacity-50 ml-4">Compare</span>
-				<button onClick={() => setComparing(v => !v)} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: comparing ? 1 : 0.5, background: comparing ? 'var(--btn-bg)' : 'transparent' }}>without</button>
 			</div>
-			<div className="relative">
+			<div className="relative pb-8">
 				<div className="flex flex-col gap-5">
 					{PARAGRAPHS.map((para, i) => (
 						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} style={sampleStyle}>
@@ -71,6 +94,7 @@ export default function Demo() {
 						))}
 					</div>
 				)}
+				<CompareButton active={comparing} onClick={() => setComparing(v => !v)} />
 			</div>
 			<p className="text-xs opacity-50 italic mt-6">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
 		</div>
