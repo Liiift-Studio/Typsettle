@@ -1,58 +1,23 @@
-# settle
+# Typsettle
 
-> Page-load animation where per-line tracking starts at random offsets and eases to optical equilibrium — like watching a compositor tune a paragraph
+**[typsettle.com](https://typsettle.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/typsettle) · [GitHub](https://github.com/Liiift-Studio/Typsettle)
 
-## Concept
-
-On mount, each line is assigned a random letter-spacing offset (±0.04em). Over ~800ms, every line eases toward its optically optimal tracking value. The paragraph looks like a compositor fine-tuning it in real time. Stops when settled. Can combine with gray-value as the target state.
+---
 
 ## Install
 
 ```bash
-npm install settle
+npm install @liiift-studio/typsettle
 ```
 
-## Usage
-
-### React
-
-```tsx
-import { SettleText } from 'settle'
-
-<SettleText>
-  Your paragraph text here.
-</SettleText>
-```
-
-### Vanilla JS
-
-```ts
-import { applySettle, getCleanHTML } from 'settle'
-
-const el = document.querySelector('p')
-const original = getCleanHTML(el)
-applySettle(el, original, { /* options */ })
-```
-
-## Options
-
-| Option | Description |
-|--------|-------------|
-| `spread` | max initial offset in em, default 0.04 |
-| `duration` | ms, default 800 |
-| `easing` | CSS easing string |
-| `target` | 'zero' | 'gray-value' |
-| `stagger` | delay between lines in ms |
-
-## Development
-
-```bash
-npm install
-npm test
-npm run build
-```
+See [typsettle.com](https://typsettle.com) for full API docs and a live demo.
 
 ---
 
-Part of the [Liiift Studio](https://liiift.studio) typography tools family.
-See also: [Ragtooth](https://ragtooth.liiift.studio)
+## Dev notes
+
+### `next` in root devDependencies
+
+`package.json` at the repo root lists `next` as a devDependency. This is a **Vercel detection workaround** — not a real dependency of the npm package. Vercel's build system inspects the root `package.json` to detect the framework; without `next` present it falls back to a static build and skips the Next.js pipeline, breaking the `/site` subdirectory deploy.
+
+The package itself has zero runtime dependencies. Do not remove this entry.

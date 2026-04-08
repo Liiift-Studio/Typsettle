@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="hsl(80,55%,10%)"/>
+
+  <!-- Baseline grid lines (faint dashed) — text settles onto them -->
+  <line x1="9" y1="19" x2="55" y2="19" stroke="#f0ece3" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.25"/>
+  <line x1="9" y1="31" x2="55" y2="31" stroke="#f0ece3" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.25"/>
+  <line x1="9" y1="43" x2="55" y2="43" stroke="#f0ece3" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.25"/>
+  <line x1="9" y1="55" x2="55" y2="55" stroke="#f0ece3" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.25"/>
+
+  <!-- Text lines sitting flush on each grid line -->
+  <rect x="9" y="12" width="46" height="7" rx="3.5" fill="#f0ece3"/>
+  <rect x="9" y="24" width="34" height="7" rx="3.5" fill="#f0ece3" opacity="0.8"/>
+  <rect x="9" y="36" width="46" height="7" rx="3.5" fill="#f0ece3"/>
+  <rect x="9" y="48" width="26" height="7" rx="3.5" fill="#f0ece3" opacity="0.75"/>
+</svg>
