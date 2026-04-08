@@ -52,6 +52,14 @@ export function applySettle(
 ): void {
 	if (typeof window === 'undefined') return
 
+	// Respect the active flag and the user's reduced-motion preference
+	const active = options.active ?? true
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	if (!active || prefersReducedMotion) {
+		element.innerHTML = originalHTML
+		return
+	}
+
 	// Save scroll position — iOS Safari does not support overflow-anchor: none
 	const scrollY = window.scrollY
 

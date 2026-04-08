@@ -25,7 +25,7 @@ export default function Home() {
 					<span>TypeScript</span><span>·</span><span>Zero dependencies</span><span>·</span><span>React + Vanilla JS</span>
 				</div>
 				<p className="text-base opacity-60 leading-relaxed max-w-lg">
-					Paragraph text enters from randomised letter-spacing and transitions to optical equilibrium. A page-load animation that feels typographic rather than decorative — lines staggered, motion purposeful, prefers-reduced-motion respected.
+					Paragraph text enters from randomised letter-spacing and transitions to optical equilibrium. A page-load animation that feels typographic rather than decorative — lines staggered, motion purposeful. Respects prefers-reduced-motion and the active option.
 				</p>
 			</section>
 
