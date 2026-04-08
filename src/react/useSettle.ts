@@ -33,6 +33,8 @@ export function useSettle(options: UseSettleOptions = {}) {
 		return false
 	}, [])
 
+	const { spread, duration, stagger, active } = options
+
 	const run = useCallback(() => {
 		const el = ref.current
 		if (!el) return
@@ -48,7 +50,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 		}
 
 		applySettle(el, originalHTMLRef.current, optionsRef.current)
-	}, [shouldSkip])
+	}, [shouldSkip, spread, duration, stagger, active])
 
 	useLayoutEffect(() => {
 		run()
