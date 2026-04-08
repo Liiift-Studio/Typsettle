@@ -64,5 +64,6 @@
 	},
 	"bugs": {
 		"url": "https://github.com/Liiift-Studio/Typsettle/issues"
-	}
+	},
+	"sideEffects": false
 }
