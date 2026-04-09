@@ -74,7 +74,7 @@ export default function Demo() {
 	}
 
 	return (
-		<div className="w-full" style={{ overflow: 'hidden' }}>
+		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-6">
 				<Slider label="Spread" value={spread} min={0.005} max={0.12} step={0.005} onChange={setSpread} />
 				<Slider label="Duration (ms)" value={duration} min={200} max={2000} step={50} onChange={setDuration} />
