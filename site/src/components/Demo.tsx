@@ -44,10 +44,20 @@ function BeforeAfterToggle({ active, onClick }: { active: boolean; onClick: () =
 	)
 }
 
+const EASING_OPTIONS = [
+	{ label: 'ease', value: 'ease' },
+	{ label: 'ease-out', value: 'ease-out' },
+	{ label: 'ease-in-out', value: 'ease-in-out' },
+	{ label: 'linear', value: 'linear' },
+] as const
+
+type EasingOption = typeof EASING_OPTIONS[number]['value']
+
 export default function Demo() {
 	const [spread, setSpread] = useState(0.04)
 	const [duration, setDuration] = useState(800)
 	const [stagger, setStagger] = useState(80)
+	const [easing, setEasing] = useState<EasingOption>('ease')
 	const [key, setKey] = useState(0)
 	const [beforeAfter, setComparing] = useState(false)
 
@@ -70,6 +80,12 @@ export default function Demo() {
 				<Slider label="Duration (ms)" value={duration} min={200} max={2000} step={50} onChange={setDuration} />
 				<Slider label="Stagger (ms)" value={stagger} min={0} max={300} step={10} onChange={setStagger} />
 			</div>
+			<div className="flex flex-wrap items-center gap-3 mb-4">
+				<span className="text-xs uppercase tracking-widest opacity-50">Easing</span>
+				{EASING_OPTIONS.map(({ label, value }) => (
+					<button key={value} onClick={() => { setEasing(value); replay() }} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
+				))}
+			</div>
 			<div className="flex items-center gap-4 mb-8">
 				<button
 					onClick={replay}
@@ -82,7 +98,7 @@ export default function Demo() {
 			<div className="relative pb-8">
 				<div className="flex flex-col gap-5">
 					{PARAGRAPHS.map((para, i) => (
-						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} style={sampleStyle}>
+						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} easing={easing} style={sampleStyle}>
 							{para}
 						</SettleText>
 					))}
