@@ -69,5 +69,8 @@
 	"bugs": {
 		"url": "https://github.com/Liiift-Studio/Typsettle/issues"
 	},
-	"sideEffects": false
+	"sideEffects": false,
+	"publishConfig": {
+		"access": "public"
+	}
 }
