@@ -1,5 +1,5 @@
 // settle/src/react/useSettle.ts — React hook for the settle animation
-import { useCallback, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { applySettle, getCleanHTML, removeSettle } from '../core/adjust'
 import type { SettleOptions } from '../core/types'
 
@@ -71,6 +71,13 @@ export function useSettle(options: UseSettleOptions = {}) {
 			ro.disconnect()
 			cancelAnimationFrame(rafId)
 		}
+	}, [run])
+
+
+	// Rerun after all fonts finish loading — line detection uses BCR which
+	// gives wrong results if the font has not yet swapped in.
+	useEffect(() => {
+		document.fonts.ready.then(run)
 	}, [run])
 
 	return ref
