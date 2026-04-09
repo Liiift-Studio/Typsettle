@@ -209,8 +209,11 @@ export function applySettle(
 			lines[lines.length - 1]?.push(wordSpans[si++])
 		}
 	} else {
-		// BCR path — batch all reads before any writes
-		const wordTops = wordSpans.map((w) => w.getBoundingClientRect().top)
+		// BCR path — batch all reads before any writes.
+		// Round top values to integer pixels before comparing — subpixel BCR values differ
+		// across browsers (Chrome/Firefox/Safari) and can cause same-line words to appear
+		// on different lines if compared as raw floats.
+		const wordTops = wordSpans.map((w) => Math.round(w.getBoundingClientRect().top))
 		let currentTop = wordTops[0]
 		let currentLine: HTMLElement[] = []
 		for (let i = 0; i < wordSpans.length; i++) {
