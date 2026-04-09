@@ -78,7 +78,6 @@ export default function Demo() {
 				>
 					↺ Play again
 				</button>
-				<span className="text-xs opacity-50">Reload to see the entrance animation, or press Play again.</span>
 			</div>
 			<div className="relative pb-8">
 				<div className="flex flex-col gap-5">
