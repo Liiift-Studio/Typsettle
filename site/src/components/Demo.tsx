@@ -96,7 +96,7 @@ export default function Demo() {
 				</button>
 			</div>
 			<div className="relative pb-8">
-				<div className="flex flex-col gap-5">
+				<div className="flex flex-col gap-8">
 					{PARAGRAPHS.map((para, i) => (
 						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} easing={easing} style={sampleStyle}>
 							{para}
@@ -104,7 +104,7 @@ export default function Demo() {
 					))}
 				</div>
 				{beforeAfter && (
-					<div aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: '100%', opacity: 0.25, pointerEvents: 'none' }} className="flex flex-col gap-5">
+					<div aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: '100%', opacity: 0.25, pointerEvents: 'none' }} className="flex flex-col gap-8">
 						{PARAGRAPHS.map((para, i) => (
 							<p key={i} style={{ ...sampleStyle, margin: 0 }}>{para}</p>
 						))}
@@ -112,7 +112,7 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
-			<p className="text-xs opacity-50 italic mt-6">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
+			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
 		</div>
 	)
 }
