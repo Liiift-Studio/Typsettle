@@ -92,6 +92,8 @@ Each visual line is wrapped in a `<span>`. A random `letter-spacing` value in `[
 
 The line spans are **not** automatically removed after the transition completes — they remain in the DOM with `letter-spacing: 0em`. Call `removeSettle(el, original)` manually if you need to restore the original markup (e.g. before a re-run). The animation is skipped entirely if `prefers-reduced-motion: reduce` is set or `active` is `false`.
 
+**Line break safety:** Line breaks are locked to the browser's natural layout. Each run starts from the original HTML, detects lines at zero letter-spacing, then wraps them with `white-space: nowrap`. Word breaks never change during or after the animation. Lines may overflow briefly during the transition (when random offsets are applied) but settle to `letter-spacing: 0em` — their exact natural width — by the time the animation ends.
+
 ---
 
 ## Dev notes
