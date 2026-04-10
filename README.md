@@ -1,6 +1,6 @@
 # Typsettle
 
-Paragraph text enters from randomised letter-spacing and transitions to optical equilibrium. A page-load animation that feels typographic rather than decorative — lines staggered, motion purposeful. Like watching a compositor tune a paragraph. Runs once on mount, leaves no trace in the DOM. Respects `prefers-reduced-motion`.
+Paragraph text enters from randomised letter-spacing and transitions to optical equilibrium. A page-load animation that feels typographic rather than decorative — lines staggered, motion purposeful. Like watching a compositor tune a paragraph. Respects `prefers-reduced-motion`.
 
 **[typsettle.com](https://typsettle.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/typsettle) · [GitHub](https://github.com/Liiift-Studio/Typsettle)
 
@@ -18,6 +18,8 @@ npm install @liiift-studio/typsettle
 
 ## Usage
 
+> **Next.js App Router:** this library uses browser APIs. Add `"use client"` to any component file that imports from it.
+
 ### React component
 
 ```tsx
@@ -33,18 +35,39 @@ import { SettleText } from '@liiift-studio/typsettle'
 ```tsx
 import { useSettle } from '@liiift-studio/typsettle'
 
+// Inside a React component:
 const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
-<p ref={ref}>{children}</p>
+return <p ref={ref}>{children}</p>
 ```
 
 ### Vanilla JS
 
 ```ts
-import { applySettle, getCleanHTML } from '@liiift-studio/typsettle'
+import { applySettle, removeSettle, getCleanHTML } from '@liiift-studio/typsettle'
 
 const el = document.querySelector('p')
 const original = getCleanHTML(el)
+
 applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
+
+// Re-run after custom fonts load — line detection uses BCR, which gives wrong
+// line groups if the font hasn't swapped in yet. applySettle resets to original first,
+// so re-calling it is safe:
+document.fonts.ready.then(() => {
+  applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
+})
+
+// The line spans remain in the DOM after the animation completes.
+// Call removeSettle to restore original markup (e.g. before re-running):
+// removeSettle(el, original)
+```
+
+### TypeScript
+
+```ts
+import type { SettleOptions } from '@liiift-studio/typsettle'
+
+const opts: SettleOptions = { spread: 0.04, duration: 800, stagger: 80, active: true }
 ```
 
 ---
@@ -58,7 +81,7 @@ applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
 | `easing` | `'cubic-bezier(0.25, 0.1, 0.25, 1)'` | CSS easing string |
 | `stagger` | `0` | Delay between lines in ms. `0` settles all lines together; `80` gives a cascading effect |
 | `active` | `true` | Set `false` to skip the animation entirely (e.g. for conditional disabling) |
-| `lineDetection` | `'bcr'` | `'bcr'` reads actual browser layout — ground truth, works with any font and inline HTML. `'canvas'` uses [`@chenglou/pretext`](https://github.com/chenglou/pretext) for arithmetic line breaking with no forced reflow on resize. Install pretext separately |
+| `lineDetection` | `'bcr'` | `'bcr'` reads actual browser layout — ground truth, works with any font and inline HTML. `'canvas'` uses `@chenglou/pretext` for arithmetic line breaking with no forced reflow on resize (`npm install @chenglou/pretext`). Falls back to `'bcr'` while pretext loads |
 | `as` | `'p'` | HTML element to render, e.g. `'h1'`, `'div'`. *(React component only)* |
 
 ---
