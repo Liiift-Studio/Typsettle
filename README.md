@@ -65,7 +65,9 @@ applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
 
 ## How it works
 
-Each visual line is wrapped in a `<span>`. A random `letter-spacing` value in `[-spread, +spread]` em is applied immediately. On the next `requestAnimationFrame`, a CSS transition is set on each span and `letter-spacing` is cleared — the browser then animates each line back to zero. Stagger is implemented by adding `i × stagger` ms to each line's `transition-delay`. Once all transitions complete, the injected spans are removed and the element is restored to its original HTML. The animation is skipped entirely if `prefers-reduced-motion: reduce` is set.
+Each visual line is wrapped in a `<span>`. A random `letter-spacing` value in `[-spread, +spread]` em is applied immediately. On the next `requestAnimationFrame`, a CSS transition is set on each span and `letter-spacing` is set to `0em` — the browser animates each line back to zero. Stagger is implemented as a per-span `transition-delay` of `i × stagger` ms.
+
+The line spans are **not** automatically removed after the transition completes — they remain in the DOM with `letter-spacing: 0em`. Call `removeSettle(el, original)` manually if you need to restore the original markup (e.g. before a re-run). The animation is skipped entirely if `prefers-reduced-motion: reduce` is set or `active` is `false`.
 
 ---
 
