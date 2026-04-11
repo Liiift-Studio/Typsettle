@@ -36,6 +36,37 @@ function getLineHeightPx(el: HTMLElement): number {
 	return isNaN(lh) ? parseFloat(s.fontSize) * 1.2 : lh
 }
 
+/**
+ * Measure optical density of a text string by rendering to an off-screen canvas.
+ * Returns ink pixel fraction in [0, 1] — higher = denser (more ink coverage).
+ *
+ * @param text     - Text string to render
+ * @param font     - CSS font string (e.g. '400 16px Inter') matching the element
+ * @param fontSize - Font size in px — used to size the canvas height
+ */
+function measureLineDensity(text: string, font: string, fontSize: number): number {
+	if (!text.trim()) return 0
+	const canvas = document.createElement('canvas')
+	// Width: rough estimate (0.7 × fontSize per character covers most fonts)
+	const width  = Math.ceil(fontSize * text.length * 0.7) || 1
+	const height = Math.ceil(fontSize * 2)
+	canvas.width  = width
+	canvas.height = height
+	const ctx = canvas.getContext('2d')
+	if (!ctx) return 0
+	ctx.font = font
+	ctx.fillStyle = 'white'
+	ctx.fillRect(0, 0, width, height)
+	ctx.fillStyle = 'black'
+	ctx.fillText(text, 0, fontSize * 1.2)
+	const data = ctx.getImageData(0, 0, width, height).data
+	let ink = 0
+	for (let i = 0; i < data.length; i += 4) {
+		if (data[i] < 140) ink++
+	}
+	return ink / (width * height)
+}
+
 /** Resolved defaults applied when options are omitted */
 const DEFAULTS = {
 	spread: 0.04,
@@ -91,6 +122,14 @@ export function applySettle(
 	const active = options.active ?? true
 	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 	if (!active || prefersReducedMotion) {
+		element.innerHTML = originalHTML
+		return
+	}
+
+	// On e-ink / slow-update displays the CSS transition produces no visible effect.
+	// Skip the random-offset phase entirely — just restore original HTML and return.
+	// matchMedia('(update: slow)') is true on Kindle, Remarkable, and similar panels.
+	if (window.matchMedia('(update: slow)').matches) {
 		element.innerHTML = originalHTML
 		return
 	}
@@ -227,6 +266,36 @@ export function applySettle(
 		lines.push(currentLine)
 	}
 
+	// --- Density target computation (optional) ---
+	// When targetTracking is set, compute a per-line settling target before clearing DOM.
+	// 'auto': measure canvas density per line → equalize around the average (±0.05em clamp).
+	// number: all lines share the explicit em value.
+	let targetTrackingValues: number[] | null = null
+	const targetTrackingOption = options.targetTracking
+
+	if (targetTrackingOption !== undefined) {
+		if (typeof targetTrackingOption === 'number') {
+			targetTrackingValues = lines.map(() => targetTrackingOption)
+		} else {
+			// 'auto' — per-line optical density via off-screen canvas
+			const font     = getCanvasFont(element)
+			const fontSize = parseFloat(getComputedStyle(element).fontSize)
+			const densities = lines.map((lineWords) => {
+				const text = lineWords.map((w) => (w.textContent ?? '').trim()).join(' ')
+				return measureLineDensity(text, font, fontSize)
+			})
+			const avg = densities.reduce((a, b) => a + b, 0) / densities.length
+			// Dense lines (above avg) get positive tracking to spread out.
+			// Sparse lines (below avg) get negative tracking to tighten.
+			const calibration = 2.0
+			const maxAdj      = 0.05
+			targetTrackingValues = densities.map((d) => {
+				const raw = (d - avg) * calibration
+				return Math.max(-maxAdj, Math.min(maxAdj, raw))
+			})
+		}
+	}
+
 	// --- Pass 4: Assemble line spans ---
 	// Each line becomes an inline-block span with white-space:nowrap and a random
 	// letter-spacing offset. A <br data-settle-br> between lines forces the visual break.
@@ -255,17 +324,20 @@ export function applySettle(
 	// Collect per-line HTML before clearing element
 	const lineHTMLs = lines.map(buildLineHTML)
 
-	// Generate random offsets (±spread em) for each line
+	// Generate random offsets (±spread em) for each line.
+	// When targetTracking is set, the initial letter-spacing is target + offset so the
+	// animation starts near equilibrium and the settle transition converges to the target.
 	const offsets = lines.map(() => (Math.random() * 2 - 1) * spread)
 
 	// Write phase — replace element content with line spans
 	let newHTML = ''
 	for (let i = 0; i < lines.length; i++) {
-		const offset = offsets[i]
-		const delay  = stagger > 0 ? `transition-delay:${i * stagger}ms;` : ''
+		const target         = targetTrackingValues ? targetTrackingValues[i] : 0
+		const initialSpacing = (target + offsets[i]).toFixed(5)
+		const delay          = stagger > 0 ? `transition-delay:${i * stagger}ms;` : ''
 		const transitionStyle = `transition:letter-spacing ${duration}ms ${easing};${delay}`
 		newHTML +=
-			`<span class="${SETTLE_CLASSES.line}" style="display:inline-block;white-space:nowrap;letter-spacing:${offset}em;${transitionStyle}">${lineHTMLs[i]}</span>`
+			`<span class="${SETTLE_CLASSES.line}" style="display:inline-block;white-space:nowrap;letter-spacing:${initialSpacing}em;${transitionStyle}">${lineHTMLs[i]}</span>`
 		if (i < lines.length - 1) {
 			newHTML += `<br data-settle-br>`
 		}
@@ -280,10 +352,12 @@ export function applySettle(
 
 	// --- Pass 5: Transition trigger ---
 	// One rAF lets the browser paint the initial offset state, then setting
-	// letter-spacing to 0 triggers the CSS transition → lines ease to zero.
+	// letter-spacing to the target triggers the CSS transition → lines ease to equilibrium.
+	// Target is 0em by default; density-equalized values when targetTracking is set.
 	requestAnimationFrame(() => {
-		lineSpans.forEach((span) => {
-			span.style.letterSpacing = '0em'
+		lineSpans.forEach((span, i) => {
+			const target = targetTrackingValues ? targetTrackingValues[i] : 0
+			span.style.letterSpacing = `${target.toFixed(5)}em`
 		})
 
 		// Restore scroll position after DOM mutations (inner rAF for scroll restore)

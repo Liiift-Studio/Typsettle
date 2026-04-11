@@ -24,6 +24,22 @@ export interface SettleOptions {
 	stagger?: number
 	/** When false, skip the animation entirely (default: true) */
 	active?: boolean
+	/**
+	 * Target letter-spacing value each line settles to. Default: 0em (natural spacing).
+	 *
+	 * - **omitted** — lines settle to `0em` letter-spacing.
+	 *
+	 * - **number** — all lines settle to this explicit em value. Positive adds tracking;
+	 *   negative subtracts it. Useful for a consistent loose or tight equilibrium.
+	 *
+	 * - **'auto'** — optical density is measured per line via an off-screen canvas.
+	 *   The target density is the average across all lines. Lines denser than average
+	 *   receive positive tracking; sparse lines receive negative tracking. Each line
+	 *   settles to its individual density-equalizing value. Clamped to ±0.05em.
+	 *   The animation still starts from a random offset — settle becomes double-purposeful:
+	 *   it animates AND equalizes density simultaneously.
+	 */
+	targetTracking?: number | 'auto'
 }
 
 /** CSS class names injected by settle — use these to target generated markup */
