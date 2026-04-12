@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useDeferredValue, useCallback } from "react"
+import { useState, useDeferredValue, useCallback, useRef, useEffect } from "react"
 import { SettleText } from "@liiift-studio/typsettle"
 
 const PARAGRAPHS = [
@@ -67,6 +67,28 @@ export default function Demo() {
 
 	const replay = useCallback(() => setKey(k => k + 1), [])
 
+	/** Tracks whether the first intersection has already fired (initial mount view) */
+	const hasPlayedRef = useRef(false)
+	const containerRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const el = containerRef.current
+		if (!el || typeof IntersectionObserver === 'undefined') return
+		const io = new IntersectionObserver(entries => {
+			for (const entry of entries) {
+				if (entry.isIntersecting) {
+					if (hasPlayedRef.current) {
+						replay()
+					} else {
+						hasPlayedRef.current = true
+					}
+				}
+			}
+		}, { threshold: 0.3 })
+		io.observe(el)
+		return () => io.disconnect()
+	}, [replay])
+
 	const sampleStyle: React.CSSProperties = {
 		fontFamily: "var(--font-merriweather), serif",
 		fontSize: "1.125rem",
@@ -87,7 +109,21 @@ export default function Demo() {
 					<button key={value} onClick={() => { setEasing(value); replay() }} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
 				))}
 			</div>
-			<div className="flex items-center gap-4 mb-8">
+			<div className="flex items-center gap-3 flex-wrap mb-8">
+				<button
+					onClick={() => { setSpread(0.01); setDuration(1500); setStagger(100); setEasing('ease-out'); replay() }}
+					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
+					style={{ borderColor: 'currentColor', opacity: 0.5, background: 'var(--btn-bg)' }}
+				>
+					Subtle
+				</button>
+				<button
+					onClick={() => { setSpread(0.08); setDuration(350); setStagger(15); setEasing('ease'); replay() }}
+					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
+					style={{ borderColor: 'currentColor', opacity: 0.5, background: 'var(--btn-bg)' }}
+				>
+					Dramatic
+				</button>
 				<button
 					onClick={replay}
 					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
@@ -96,7 +132,7 @@ export default function Demo() {
 					↺ Play again
 				</button>
 			</div>
-			<div className="relative pb-8">
+			<div ref={containerRef} className="relative pb-8">
 				<div className="flex flex-col gap-8">
 					{PARAGRAPHS.map((para, i) => (
 						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} easing={easing} style={sampleStyle}>
