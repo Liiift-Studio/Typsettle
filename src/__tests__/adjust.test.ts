@@ -201,7 +201,7 @@ describe('settle', () => {
 		const lines = el.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
 		expect(lines.length).toBeGreaterThan(0)
 		lines.forEach((line) => {
-			expect(line.style.letterSpacing).toBe('0em')
+			expect(parseFloat(line.style.letterSpacing)).toBe(0)
 		})
 	})
 
