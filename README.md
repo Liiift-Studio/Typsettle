@@ -38,14 +38,14 @@ import { SettleText } from '@liiift-studio/typsettle'
 import { useSettle } from '@liiift-studio/typsettle'
 
 // Inside a React component:
-const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
+const { ref, replay } = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
 return <p ref={ref}>{children}</p>
 ```
 
 ### Vanilla JS
 
 ```ts
-import { applySettle, removeSettle, getCleanHTML } from '@liiift-studio/typsettle'
+import { applySettle, removeSettle, replaySettle, getCleanHTML } from '@liiift-studio/typsettle'
 
 const el = document.querySelector('p')
 const original = getCleanHTML(el)
@@ -62,6 +62,9 @@ document.fonts.ready.then(() => {
 // The line spans remain in the DOM after the animation completes.
 // Call removeSettle to restore original markup (e.g. before re-running):
 // removeSettle(el, original)
+
+// Replay the settle animation on a previously-settled element:
+// replaySettle(el)
 ```
 
 ### TypeScript
@@ -83,8 +86,41 @@ const opts: SettleOptions = { spread: 0.04, duration: 800, stagger: 80, active: 
 | `easing` | `'cubic-bezier(0.25, 0.1, 0.25, 1)'` | CSS easing string |
 | `stagger` | `0` | Delay between lines in ms. `0` settles all lines together; `80` gives a cascading effect |
 | `active` | `true` | Set `false` to skip the animation entirely (e.g. for conditional disabling) |
+| `direction` | `'expand'` | `'expand'` animates from condensed → normal tracking; `'compress'` animates from normal → condensed |
+| `intersect` | `false` | Replay the animation each time the element scrolls into view |
 | `lineDetection` | `'bcr'` | `'bcr'` reads actual browser layout — ground truth, works with any font and inline HTML. `'canvas'` uses `@chenglou/pretext` for arithmetic line breaking with no forced reflow on resize (`npm install @chenglou/pretext`). Falls back to `'bcr'` while pretext loads |
 | `as` | `'p'` | HTML element to render, e.g. `'h1'`, `'div'`. *(React component only)* |
+
+---
+
+## API reference
+
+### Core functions
+
+| Function | Description |
+|----------|-------------|
+| `applySettle(element, originalHTML, options)` | Wrap lines and run the settle animation |
+| `removeSettle(element, originalHTML)` | Restore the element to its original markup |
+| `replaySettle(element)` | Replay the settle animation on a previously-settled element |
+| `getCleanHTML(element)` | Return the element's inner HTML with any Typsettle spans stripped |
+
+### React hook
+
+`useSettle(options)` returns `{ ref, replay }`:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `ref` | `React.RefObject` | Attach to the element you want to animate |
+| `replay` | `() => void` | Call to replay the settle animation imperatively |
+
+### `SettleText` component props
+
+Accepts all `SettleOptions` plus:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `as` | `string` | HTML element to render (default `'p'`) |
+| `onReady` | `(replay: () => void) => void` | Callback fired once the animation completes, receiving a `replay` function |
 
 ---
 
