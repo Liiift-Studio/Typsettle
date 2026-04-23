@@ -40,6 +40,15 @@ export interface SettleOptions {
 	 *   it animates AND equalizes density simultaneously.
 	 */
 	targetTracking?: number | 'auto'
+	/**
+	 * Animation direction. Default: 'expand'
+	 *
+	 * - **'expand'** (default) — lines start at a wide letter-spacing and ease to natural.
+	 * - **'compress'** — lines start at zero letter-spacing and ease outward to natural.
+	 */
+	direction?: 'expand' | 'compress'
+	/** When true, re-runs the animation each time the element scrolls into view. Default: false */
+	intersect?: boolean
 }
 
 /** CSS class names injected by settle — use these to target generated markup */

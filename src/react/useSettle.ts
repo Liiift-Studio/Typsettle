@@ -1,6 +1,6 @@
 // settle/src/react/useSettle.ts — React hook for the settle animation
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
-import { applySettle, getCleanHTML, removeSettle } from '../core/adjust'
+import { applySettle, getCleanHTML, removeSettle, replaySettle } from '../core/adjust'
 import type { SettleOptions } from '../core/types'
 
 /** Props accepted by useSettle in addition to SettleOptions */
@@ -13,9 +13,10 @@ export interface UseSettleOptions extends SettleOptions {
  * React hook that applies the settle effect to a ref'd element on mount.
  * Skips the animation when active=false or when the user prefers reduced motion.
  * Re-runs on element width changes detected via ResizeObserver.
+ * When intersect=true, re-runs the animation each time the element enters the viewport.
  *
  * @param options - UseSettleOptions (all fields optional)
- * @returns ref to attach to the target element
+ * @returns object with ref to attach to the target element and a replay function
  */
 export function useSettle(options: UseSettleOptions = {}) {
 	const ref = useRef<HTMLElement>(null)
@@ -33,7 +34,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 		return false
 	}, [])
 
-	const { spread, duration, stagger, active } = options
+	const { spread, duration, stagger, active, intersect } = options
 
 	const run = useCallback(() => {
 		const el = ref.current
@@ -51,6 +52,13 @@ export function useSettle(options: UseSettleOptions = {}) {
 
 		applySettle(el, originalHTMLRef.current, optionsRef.current)
 	}, [shouldSkip, spread, duration, stagger, active])
+
+	/** Imperatively replay the settle animation from the original HTML snapshot */
+	const replay = useCallback(() => {
+		const el = ref.current
+		if (!el || originalHTMLRef.current === null) return
+		replaySettle(el, originalHTMLRef.current, optionsRef.current)
+	}, [])
 
 	useLayoutEffect(() => {
 		run()
@@ -80,5 +88,20 @@ export function useSettle(options: UseSettleOptions = {}) {
 		document.fonts.ready.then(run)
 	}, [run])
 
-	return ref
+	// Intersection Observer — re-run animation each time element enters viewport.
+	// Only active when intersect=true and IntersectionObserver is available.
+	useEffect(() => {
+		if (!intersect) return
+		if (typeof IntersectionObserver === 'undefined') return
+		const el = ref.current
+		if (!el) return
+
+		const io = new IntersectionObserver((entries) => {
+			if (entries[0].isIntersecting) run()
+		})
+		io.observe(el)
+		return () => io.disconnect()
+	}, [intersect, run])
+
+	return { ref, replay }
 }

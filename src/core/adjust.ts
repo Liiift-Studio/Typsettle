@@ -325,15 +325,23 @@ export function applySettle(
 	const lineHTMLs = lines.map(buildLineHTML)
 
 	// Generate random offsets (±spread em) for each line.
-	// When targetTracking is set, the initial letter-spacing is target + offset so the
-	// animation starts near equilibrium and the settle transition converges to the target.
-	const offsets = lines.map(() => (Math.random() * 2 - 1) * spread)
+	// In 'expand' mode (default), the sign is preserved so lines start wide and settle inward.
+	// In 'compress' mode, the sign is negated so lines start at zero and animate outward to natural.
+	const direction = options.direction ?? 'expand'
+	const rawOffsets = lines.map(() => (Math.random() * 2 - 1) * spread)
+	const offsets = direction === 'compress'
+		? rawOffsets.map((o) => -Math.abs(o))
+		: rawOffsets
 
 	// Write phase — replace element content with line spans
 	let newHTML = ''
 	for (let i = 0; i < lines.length; i++) {
 		const target         = targetTrackingValues ? targetTrackingValues[i] : 0
-		const initialSpacing = (target + offsets[i]).toFixed(5)
+		// compress: start from target minus the spread offset (below natural spacing)
+		// expand:   start from target plus the spread offset (above natural spacing)
+		const initialSpacing = direction === 'compress'
+			? (target - Math.abs(offsets[i])).toFixed(5)
+			: (target + offsets[i]).toFixed(5)
 		const delay          = stagger > 0 ? `transition-delay:${i * stagger}ms;` : ''
 		const transitionStyle = `transition:letter-spacing ${duration}ms ${easing};${delay}`
 		newHTML +=
@@ -377,4 +385,21 @@ export function applySettle(
  */
 export function removeSettle(element: HTMLElement, originalHTML: string): void {
 	element.innerHTML = originalHTML
+}
+
+/**
+ * Resets the element to its original HTML and re-runs the settle animation.
+ * Equivalent to calling removeSettle followed by applySettle.
+ *
+ * @param element      - The live DOM element to animate
+ * @param originalHTML - HTML snapshot taken before the first applySettle call
+ * @param options      - SettleOptions (merged with defaults)
+ */
+export function replaySettle(
+	element: HTMLElement,
+	originalHTML: string,
+	options: SettleOptions = {},
+): void {
+	removeSettle(element, originalHTML)
+	applySettle(element, originalHTML, options)
 }

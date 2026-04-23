@@ -110,10 +110,7 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 
 ## Future improvements
 
-- **Intersection Observer trigger** — re-run the animation each time the element scrolls into view, not just on mount
-- **Direction option** — `'expand'` (current: lines start tight and widen to normal) vs `'compress'` (lines start loose and tighten to normal)
 - **Variable font axis settle** — settle `wdth` or `wght` instead of (or alongside) letter-spacing, for fonts where axis variation reads more clearly at large sizes
-- **Replay API** — expose a `replay()` method so callers can re-trigger the animation on demand (e.g. after a route change in a SPA)
 - **Random seed** — accept a `seed` option for deterministic random offsets, so SSR-rendered markup matches the client hydration state
 
 ---
