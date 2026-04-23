@@ -58,6 +58,7 @@ export default function Demo() {
 	const [duration, setDuration] = useState(800)
 	const [stagger, setStagger] = useState(80)
 	const [easing, setEasing] = useState<EasingOption>('ease')
+	const [direction, setDirection] = useState<'expand' | 'compress'>('expand')
 	const [key, setKey] = useState(0)
 	const [beforeAfter, setComparing] = useState(false)
 
@@ -108,6 +109,10 @@ export default function Demo() {
 				{EASING_OPTIONS.map(({ label, value }) => (
 					<button key={value} onClick={() => { setEasing(value); replay() }} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
 				))}
+				<span className="text-xs uppercase tracking-widest opacity-50 ml-4">Direction</span>
+				{(['expand', 'compress'] as const).map(v => (
+					<button key={v} onClick={() => { setDirection(v); replay() }} aria-pressed={direction === v} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: direction === v ? 1 : 0.5, background: direction === v ? 'var(--btn-bg)' : 'transparent' }}>{v}</button>
+				))}
 			</div>
 			<div className="flex items-center gap-3 flex-wrap mb-8">
 				<button
@@ -135,7 +140,7 @@ export default function Demo() {
 			<div ref={containerRef} className="relative pb-8">
 				<div className="flex flex-col gap-8">
 					{PARAGRAPHS.map((para, i) => (
-						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} easing={easing} style={sampleStyle}>
+						<SettleText key={`${key}-${i}`} spread={dSpread} duration={dDuration} stagger={dStagger} easing={easing} direction={direction} style={sampleStyle}>
 							{para}
 						</SettleText>
 					))}
