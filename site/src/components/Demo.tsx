@@ -5,7 +5,7 @@ import { SettleText } from "@liiift-studio/typsettle"
 
 const PARAGRAPHS = [
 	`The first thing a reader notices about a text is not the words but the colour — the even grey field of the paragraph taken as a whole. Before meaning, before syntax, there is that impression: light, dark, dense, airy. The typographer works to make it even, to give the reader a surface to move across without resistance. A page-load animation that begins in chaos and resolves into order says something about the text it introduces: that it knows where it is going.`,
-	`Tracking — the spacing between letters across a whole word or line — is the most delicate of the compositor's instruments. Too tight and letters close against each other; too loose and words fragment. The right amount is invisible.`,
+	`Tracking — the spacing between letters across a whole word or line — is the most delicate of the compositor’s instruments. Too tight and letters close against each other; too loose and words fragment. The right amount is invisible.`,
 ]
 
 function Slider({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
