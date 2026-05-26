@@ -8,11 +8,11 @@ const PARAGRAPHS = [
 	`Tracking — the spacing between letters across a whole word or line — is the most delicate of the compositor’s instruments. Too tight and letters close against each other; too loose and words fragment. The right amount is invisible.`,
 ]
 
-function Slider({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
+function Slider({ label, value, min, max, step, onChange, title }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; title?: string }) {
 	return (
 		<div className="flex flex-col gap-1">
 			<span className="text-xs uppercase tracking-widest opacity-50">{label}</span>
-			<input type="range" min={min} max={max} step={step} value={value} aria-label={label} onChange={e => onChange(Number(e.target.value))} onTouchStart={e => e.stopPropagation()} style={{ touchAction: 'none' }} />
+			<input type="range" min={min} max={max} step={step} value={value} aria-label={label} title={title} onChange={e => onChange(Number(e.target.value))} onTouchStart={e => e.stopPropagation()} style={{ touchAction: 'none' }} />
 			<span className="tabular-nums text-xs opacity-50 text-right">{value}</span>
 		</div>
 	)
@@ -100,23 +100,24 @@ export default function Demo() {
 	return (
 		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-6">
-				<Slider label="Spread" value={spread} min={0.005} max={0.12} step={0.005} onChange={setSpread} />
-				<Slider label="Duration (ms)" value={duration} min={200} max={2000} step={50} onChange={setDuration} />
-				<Slider label="Stagger (ms)" value={stagger} min={0} max={300} step={10} onChange={setStagger} />
+				<Slider label="Spread" value={spread} min={0.005} max={0.12} step={0.005} onChange={setSpread} title="Maximum letter-spacing offset lines start from before settling — higher = more dramatic entrance" />
+				<Slider label="Duration (ms)" value={duration} min={200} max={2000} step={50} onChange={setDuration} title="How long each line takes to transition to its settled position, in milliseconds" />
+				<Slider label="Stagger (ms)" value={stagger} min={0} max={300} step={10} onChange={setStagger} title="Delay between each line's animation start — 0 = all lines settle together, higher = sequential wave" />
 			</div>
 			<div className="flex flex-wrap items-center gap-3 mb-4">
 				<span className="text-xs uppercase tracking-widest opacity-50">Easing</span>
 				{EASING_OPTIONS.map(({ label, value }) => (
-					<button key={value} onClick={() => { setEasing(value); replay() }} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
+					<button key={value} onClick={() => { setEasing(value); replay() }} title={`Use the ${label} acceleration curve for the settling transition`} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
 				))}
 				<span className="text-xs uppercase tracking-widest opacity-50 ml-4">Direction</span>
 				{(['expand', 'compress'] as const).map(v => (
-					<button key={v} onClick={() => { setDirection(v); replay() }} aria-pressed={direction === v} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: direction === v ? 1 : 0.5, background: direction === v ? 'var(--btn-bg)' : 'transparent' }}>{v}</button>
+					<button key={v} onClick={() => { setDirection(v); replay() }} aria-pressed={direction === v} title={v === 'expand' ? 'Lines start wide (tracked out) and settle inward to normal spacing' : 'Lines start tight (tracked in) and open outward to normal spacing'} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: direction === v ? 1 : 0.5, background: direction === v ? 'var(--btn-bg)' : 'transparent' }}>{v}</button>
 				))}
 			</div>
 			<div className="flex items-center gap-3 flex-wrap mb-8">
 				<button
 					onClick={() => { setSpread(0.01); setDuration(1500); setStagger(100); setEasing('ease-out'); replay() }}
+					title="Low spread, slow duration, generous stagger — a barely-there entrance that feels natural in body text"
 					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
 					style={{ borderColor: 'currentColor', opacity: 0.5, background: 'var(--btn-bg)' }}
 				>
@@ -124,6 +125,7 @@ export default function Demo() {
 				</button>
 				<button
 					onClick={() => { setSpread(0.08); setDuration(350); setStagger(15); setEasing('ease'); replay() }}
+					title="High spread, fast duration, tight stagger — a bold simultaneous snap that commands attention"
 					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
 					style={{ borderColor: 'currentColor', opacity: 0.5, background: 'var(--btn-bg)' }}
 				>
@@ -131,6 +133,7 @@ export default function Demo() {
 				</button>
 				<button
 					onClick={replay}
+					title="Re-run the settle animation from the start"
 					className="text-xs px-4 py-1.5 rounded-full border transition-opacity hover:opacity-100"
 					style={{ borderColor: 'currentColor', opacity: 0.7, background: 'var(--btn-bg)' }}
 				>
