@@ -252,7 +252,11 @@ export function applySettle(
 		// Round top values to integer pixels before comparing — subpixel BCR values differ
 		// across browsers (Chrome/Firefox/Safari) and can cause same-line words to appear
 		// on different lines if compared as raw floats.
-		const wordTops = wordSpans.map((w) => Math.round(w.getBoundingClientRect().top))
+		const elementTop = element.getBoundingClientRect().top
+		const lhPx = getLineHeightPx(element)
+		const wordTops = wordSpans.map((w) =>
+			Math.round((w.getBoundingClientRect().top - elementTop) / lhPx)
+		)
 		let currentTop = wordTops[0]
 		let currentLine: HTMLElement[] = []
 		for (let i = 0; i < wordSpans.length; i++) {
@@ -304,21 +308,33 @@ export function applySettle(
 	// Build new innerHTML by rebuilding from word spans' outerHTML, preserving
 	// inline ancestor context (em, strong, a, etc.) for each word.
 	const buildLineHTML = (lineWords: HTMLElement[]): string => {
-		return lineWords
-			.map((word) => {
-				// Walk up to element to capture inline ancestor wrapping
-				let html = word.outerHTML
-				let ancestor: Element | null = word.parentElement
-				while (ancestor && ancestor !== element) {
-					const shallow = ancestor.cloneNode(false) as Element
-					const shallowHTML = shallow.outerHTML
-					const split = shallowHTML.lastIndexOf('</')
-					html = shallowHTML.slice(0, split) + html + shallowHTML.slice(split)
-					ancestor = ancestor.parentElement
-				}
-				return html
-			})
-			.join('')
+		// Group consecutive words that share the same parent element so inline ancestors
+		// (e.g. <code>, <em>) are emitted once per group, not once per word.
+		type Group = { parent: Element | null; words: HTMLElement[] }
+		const groups: Group[] = []
+		for (const word of lineWords) {
+			const parent = word.parentElement !== element ? word.parentElement : null
+			const last = groups[groups.length - 1]
+			if (last && last.parent === parent) {
+				last.words.push(word)
+			} else {
+				groups.push({ parent, words: [word] })
+			}
+		}
+		return groups.map(({ parent, words }) => {
+			const inner = words.map(w => w.outerHTML).join('')
+			if (!parent) return inner
+			let html = inner
+			let ancestor: Element | null = parent
+			while (ancestor && ancestor !== element) {
+				const shallow = ancestor.cloneNode(false) as Element
+				const shallowHTML = shallow.outerHTML
+				const split = shallowHTML.lastIndexOf('</')
+				html = shallowHTML.slice(0, split) + html + shallowHTML.slice(split)
+				ancestor = ancestor.parentElement
+			}
+			return html
+		}).join('')
 	}
 
 	// Collect per-line HTML before clearing element
