@@ -28,7 +28,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 	const shouldSkip = useCallback(() => {
 		const { active = true } = optionsRef.current
 		if (!active) return true
-		if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+		if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
 			return true
 		}
 		return false

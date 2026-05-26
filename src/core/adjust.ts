@@ -127,7 +127,7 @@ export function applySettle(
 
 	// Respect the active flag and the user's reduced-motion preference
 	const active = options.active ?? true
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 	if (!active || prefersReducedMotion) {
 		element.innerHTML = originalHTML
 		return
@@ -136,7 +136,7 @@ export function applySettle(
 	// On e-ink / slow-update displays the CSS transition produces no visible effect.
 	// Skip the random-offset phase entirely — just restore original HTML and return.
 	// matchMedia('(update: slow)') is true on Kindle, Remarkable, and similar panels.
-	if (window.matchMedia('(update: slow)').matches) {
+	if (window.matchMedia?.('(update: slow)')?.matches) {
 		element.innerHTML = originalHTML
 		return
 	}

@@ -76,6 +76,42 @@ describe('settle', () => {
 		restore()
 	})
 
+	it('active:false restores original HTML without injecting settle markup', () => {
+		const el = makeElement('one two three four five six')
+		const original = getCleanHTML(el)
+		applySettle(el, original, { active: false })
+		expect(el.innerHTML).toBe(original)
+		expect(el.querySelectorAll(`.${SETTLE_CLASSES.line}`).length).toBe(0)
+	})
+
+	it('prefers-reduced-motion: reduce restores original HTML without injecting markup', () => {
+		const originalMatchMedia = window.matchMedia
+		// Mock matchMedia to return matches:true for prefers-reduced-motion
+		Object.defineProperty(window, 'matchMedia', {
+			writable: true,
+			configurable: true,
+			value: (query: string) => ({
+				matches: query.includes('prefers-reduced-motion'),
+				media: query,
+				onchange: null,
+				addListener: () => {},
+				removeListener: () => {},
+				addEventListener: () => {},
+				removeEventListener: () => {},
+				dispatchEvent: () => false,
+			}),
+		})
+
+		const el = makeElement('one two three four five six')
+		const original = getCleanHTML(el)
+		applySettle(el, original, {})
+		expect(el.innerHTML).toBe(original)
+		expect(el.querySelectorAll(`.${SETTLE_CLASSES.line}`).length).toBe(0)
+
+		// Restore
+		Object.defineProperty(window, 'matchMedia', { writable: true, configurable: true, value: originalMatchMedia })
+	})
+
 	it('getCleanHTML is idempotent', () => {
 		const el = makeElement('<em>Hello</em> world')
 		const html = getCleanHTML(el)

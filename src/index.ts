@@ -3,3 +3,4 @@ export { applySettle, removeSettle, replaySettle, getCleanHTML } from './core/ad
 export { useSettle } from './react/useSettle'
 export { SettleText } from './react/SettleText'
 export type { SettleOptions } from './core/types'
+export { SETTLE_CLASSES } from './core/types'
