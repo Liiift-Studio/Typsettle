@@ -49,7 +49,7 @@ export default function Home() {
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">The resolution</p>
-						<p>A CSS transition carries each line to zero extra spacing — the optically neutral baseline. The stagger control spaces these transitions apart so lines settle in sequence rather than all at once.</p>
+						<p>A CSS transition carries each line to its natural letter-spacing baseline — the element&apos;s existing CSS tracking, if any, or zero if none is set. The stagger control spaces these transitions apart so lines settle in sequence rather than all at once.</p>
 					</div>
 				</div>
 			</section>
@@ -93,7 +93,7 @@ applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })`} />
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">easing</td><td className="py-2 pr-6 font-mono text-xs">&apos;cubic-bezier(0.25, 0.1, 0.25, 1)&apos;</td><td className="py-2">CSS easing string.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">stagger</td><td className="py-2 pr-6">0</td><td className="py-2">Delay between lines in ms. 0 = all settle together.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">active</td><td className="py-2 pr-6">true</td><td className="py-2">Set false to skip animation entirely.</td></tr>
-								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">targetTracking</td><td className="py-2 pr-6">0</td><td className="py-2">Letter-spacing each line settles to in em. Omit or 0 for natural spacing. &apos;auto&apos; measures the original rendered spacing and settles there.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">targetTracking</td><td className="py-2 pr-6">—</td><td className="py-2">Additional letter-spacing each line settles to, in em, on top of the element&apos;s existing CSS tracking. Omit for natural spacing. Pass a number for a consistent loose or tight equilibrium. &apos;auto&apos; measures per-line optical density and adjusts each line&apos;s target to equalise density across the paragraph — dense lines get more tracking, sparse lines less, clamped to ±0.05em.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">direction</td><td className="py-2 pr-6">&apos;expand&apos;</td><td className="py-2">&apos;expand&apos; — lines start wide and ease to natural. &apos;compress&apos; — lines start at zero tracking and ease outward.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">intersect</td><td className="py-2 pr-6">false</td><td className="py-2">When true, re-runs the animation each time the element scrolls into view.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">quietReplay</td><td className="py-2 pr-6">false</td><td className="py-2">When true, replays stagger each line individually (offset then settle) instead of flashing all lines simultaneously. Has no effect when stagger is 0.</td></tr>
