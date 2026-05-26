@@ -85,7 +85,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 	// Rerun after all fonts finish loading — line detection uses BCR which
 	// gives wrong results if the font has not yet swapped in.
 	useEffect(() => {
-		document.fonts.ready.then(run)
+		document.fonts?.ready?.then(run)
 	}, [run])
 
 	// Intersection Observer — re-run animation each time element enters viewport.
