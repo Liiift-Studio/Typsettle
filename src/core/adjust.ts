@@ -465,13 +465,13 @@ export function replaySettle(
 	const stagger     = options.stagger ?? DEFAULTS.stagger
 	const quietReplay = options.quietReplay ?? false
 
-	if (!quietReplay || stagger === 0) {
+	if (!quietReplay) {
 		removeSettle(element, originalHTML)
 		applySettle(element, originalHTML, options)
 		return
 	}
 
-	// quietReplay with stagger > 0:
+	// quietReplay (stagger may be 0 — all lines animate simultaneously):
 	// Find the existing line spans (already settled from a prior run), then
 	// per-line: snap to offset, remove transition, let browser paint; then
 	// restore transition and snap back to settled — all staggered.
