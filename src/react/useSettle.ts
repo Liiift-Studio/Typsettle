@@ -56,11 +56,20 @@ export function useSettle(options: UseSettleOptions = {}) {
 		hasSettledOnce.current = true
 	}, [shouldSkip, spread, duration, stagger, active])
 
+	// Tracks the cancel function returned by the most recent replaySettle call.
+	const cancelReplayRef = useRef<(() => void) | null>(null)
+
 	/** Imperatively replay the settle animation from the original HTML snapshot */
 	const replay = useCallback(() => {
 		const el = ref.current
 		if (!el || originalHTMLRef.current === null) return
-		replaySettle(el, originalHTMLRef.current, optionsRef.current)
+		cancelReplayRef.current?.()
+		cancelReplayRef.current = replaySettle(el, originalHTMLRef.current, optionsRef.current)
+	}, [])
+
+	// Cancel any in-flight stagger timers when the component unmounts.
+	useEffect(() => {
+		return () => { cancelReplayRef.current?.() }
 	}, [])
 
 	useLayoutEffect(() => {

@@ -461,14 +461,14 @@ export function replaySettle(
 	element: HTMLElement,
 	originalHTML: string,
 	options: SettleOptions = {},
-): void {
+): () => void {
 	const stagger     = options.stagger ?? DEFAULTS.stagger
 	const quietReplay = options.quietReplay ?? false
 
 	if (!quietReplay) {
 		removeSettle(element, originalHTML)
 		applySettle(element, originalHTML, options)
-		return
+		return () => {}
 	}
 
 	// quietReplay (stagger may be 0 — all lines animate simultaneously):
@@ -480,7 +480,7 @@ export function replaySettle(
 	if (existingLineSpans.length === 0) {
 		removeSettle(element, originalHTML)
 		applySettle(element, originalHTML, options)
-		return
+		return () => {}
 	}
 
 	const spread   = options.spread   ?? DEFAULTS.spread
@@ -497,10 +497,12 @@ export function replaySettle(
 		return px / fs
 	})
 
+	const timerIds: ReturnType<typeof setTimeout>[] = []
+
 	existingLineSpans.forEach((span, i) => {
 		const delay = i * stagger
 
-		setTimeout(() => {
+		const id = setTimeout(() => {
 			const settledEm = settledValues[i]
 			const rawOffset = (Math.random() * 2 - 1) * spread
 			const offset    = direction === 'compress' ? -Math.abs(rawOffset) : rawOffset
@@ -516,5 +518,9 @@ export function replaySettle(
 				span.style.letterSpacing = settledEm === 0 ? '0' : `${settledEm.toFixed(4)}em`
 			})
 		}, delay)
+
+		timerIds.push(id)
 	})
+
+	return () => { timerIds.forEach(clearTimeout) }
 }
