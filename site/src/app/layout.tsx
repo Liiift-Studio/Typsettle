@@ -5,22 +5,21 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 export const metadata: Metadata = {
-	title: "Settle — Page-load text animation to optical equilibrium",
+	title: "Typsettle — Page-load text animation to optical equilibrium | Type Tools",
 	icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
-	description:
-		"Settle animates paragraph text from randomised letter-spacing to optical equilibrium on page load. A subtle entrance animation that feels typographic rather than decorative.",
-	keywords: ["settle", "page load animation", "letter spacing", "typography", "TypeScript", "npm", "react animation"],
+	description: "Typsettle animates paragraph text from randomised per-line letter-spacing to optical equilibrium on page load. A typographic entrance animation with stagger and replay support.",
+	keywords: ["typsettle", "page load animation", "entrance animation", "letter spacing", "typography", "typesetting", "text animation", "variable font", "TypeScript", "npm", "react"],
 	openGraph: {
-		title: "Settle — Page-load text animation to optical equilibrium",
-		description: "Text enters from randomised spacing and settles into place. A typographic page-load animation.",
+		title: "Typsettle — Page-load text animation to optical equilibrium",
+		description: "Paragraph text enters from randomised per-line letter-spacing and settles into place. Stagger, replay, intersection trigger, and density equalisation built in.",
 		url: "https://typsettle.com",
-		siteName: "Settle",
+		siteName: "Typsettle",
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Settle — Page-load text animation to optical equilibrium",
-		description: "Text enters from randomised spacing and settles into place. A typographic page-load animation.",
+		title: "Typsettle — Page-load text animation to optical equilibrium",
+		description: "Paragraph text enters from randomised per-line letter-spacing and settles into place. Stagger, replay, and intersection trigger built in.",
 	},
 	metadataBase: new URL("https://typsettle.com"),
 }

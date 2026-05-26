@@ -73,16 +73,22 @@ export default function Home() {
 						<p className="opacity-50">Hook</p>
 						<CodeBlock code={`import { useSettle } from '@liiift-studio/typsettle'
 
-const ref = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
-<p ref={ref}>{children}</p>`} />
+const { ref, replay } = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
+return <p ref={ref}>{children}</p>`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Vanilla JS</p>
-						<CodeBlock code={`import { applySettle, getCleanHTML } from '@liiift-studio/typsettle'
+						<CodeBlock code={`import { applySettle, removeSettle, replaySettle, getCleanHTML } from '@liiift-studio/typsettle'
 
 const el = document.querySelector('p')
 const original = getCleanHTML(el)
-applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })`} />
+applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
+
+// Replay the animation on a settled element (e.g. on a button click):
+// replaySettle(el)
+
+// Restore original markup:
+// removeSettle(el, original)`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
