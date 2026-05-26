@@ -86,8 +86,10 @@ const opts: SettleOptions = { spread: 0.04, duration: 800, stagger: 80, active: 
 | `easing` | `'cubic-bezier(0.25, 0.1, 0.25, 1)'` | CSS easing string |
 | `stagger` | `0` | Delay between lines in ms. `0` settles all lines together; `80` gives a cascading effect |
 | `active` | `true` | Set `false` to skip the animation entirely (e.g. for conditional disabling) |
+| `targetTracking` | `0` | Letter-spacing each line settles to in em. `0` = natural spacing. `'auto'` measures the original rendered tracking and settles there |
 | `direction` | `'expand'` | `'expand'` animates from condensed → normal tracking; `'compress'` animates from normal → condensed |
 | `intersect` | `false` | Replay the animation each time the element scrolls into view |
+| `quietReplay` | `false` | When `true`, replays with each line individually offsetting then settling (staggered), instead of all lines flashing simultaneously. Has no effect when `stagger` is `0` |
 | `lineDetection` | `'bcr'` | `'bcr'` reads actual browser layout — ground truth, works with any font and inline HTML. `'canvas'` uses `@chenglou/pretext` for arithmetic line breaking with no forced reflow on resize (`npm install @chenglou/pretext`). Falls back to `'bcr'` while pretext loads |
 | `as` | `'p'` | HTML element to render, e.g. `'h1'`, `'div'`. *(React component only)* |
 
