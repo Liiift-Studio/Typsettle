@@ -36,6 +36,8 @@ export function useSettle(options: UseSettleOptions = {}) {
 
 	const { spread, duration, stagger, active, intersect } = options
 
+	const hasSettledOnce = useRef(false)
+
 	const run = useCallback(() => {
 		const el = ref.current
 		if (!el) return
@@ -51,6 +53,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 		}
 
 		applySettle(el, originalHTMLRef.current, optionsRef.current)
+		hasSettledOnce.current = true
 	}, [shouldSkip, spread, duration, stagger, active])
 
 	/** Imperatively replay the settle animation from the original HTML snapshot */
@@ -89,6 +92,8 @@ export function useSettle(options: UseSettleOptions = {}) {
 	}, [run])
 
 	// Intersection Observer — re-run animation each time element enters viewport.
+	// After the initial settle, uses replay() instead of run() to avoid the
+	// innerHTML reset that run()/applySettle() does — prevents layout shift mid-scroll.
 	// Only active when intersect=true and IntersectionObserver is available.
 	useEffect(() => {
 		if (!intersect) return
@@ -97,11 +102,16 @@ export function useSettle(options: UseSettleOptions = {}) {
 		if (!el) return
 
 		const io = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) run()
+			if (!entries[0].isIntersecting) return
+			if (hasSettledOnce.current) {
+				replay()
+			} else {
+				run()
+			}
 		})
 		io.observe(el)
 		return () => io.disconnect()
-	}, [intersect, run])
+	}, [intersect, run, replay])
 
 	return { ref, replay }
 }
