@@ -49,6 +49,12 @@ export interface SettleOptions {
 	direction?: 'expand' | 'compress'
 	/** When true, re-runs the animation each time the element scrolls into view. Default: false */
 	intersect?: boolean
+	/**
+	 * When true, `replaySettle` avoids the simultaneous all-lines flash that occurs when
+	 * stagger > 0. Instead each line individually offsets from its settled position and
+	 * transitions back, staggered by `stagger` ms. Has no effect when stagger is 0. Default: false
+	 */
+	quietReplay?: boolean
 }
 
 /** CSS class names injected by settle — use these to target generated markup */

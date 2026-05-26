@@ -75,6 +75,13 @@ const DEFAULTS = {
 	stagger: 0,
 }
 
+/** Tags treated as atomic (not walked into; wrapped as a unit in a word span) */
+const ATOMIC_TAGS = new Set(['img', 'svg', 'canvas', 'video', 'iframe', 'br', 'hr', 'input'])
+
+type CollectedItem =
+	| { type: 'text'; node: Text }
+	| { type: 'atomic'; el: HTMLElement }
+
 /**
  * Returns the innerHTML of an element with all settle-injected spans removed,
  * unwrapping their children in place. Idempotent and safe for complex markup.
@@ -102,10 +109,10 @@ export function getCleanHTML(el: HTMLElement): string {
  *
  * The algorithm runs five passes:
  *  1. Reset — restore the element to the original HTML snapshot
- *  2. Word wrap — wrap every word in a measurement span
+ *  2. Content collection — gather text nodes and atomic elements (img, svg, etc.)
  *  3. Line grouping — read BCR.top for each word span to detect visual lines
  *  4. Line span assembly — wrap each line's words in a letter-spacing span with a random offset
- *  5. Transition trigger — after one rAF, set letter-spacing to 0 to trigger CSS transition
+ *  5. Transition trigger — after one rAF, set letter-spacing to the target to trigger CSS transition
  *
  * @param element      - The live DOM element to animate (must be rendered and visible)
  * @param originalHTML - HTML snapshot taken before the first applySettle call
@@ -155,21 +162,47 @@ export function applySettle(
 		return
 	}
 
-	// --- Pass 2: Word wrap ---
-	// Collect text nodes via recursive childNodes walk (NOT createTreeWalker — happy-dom bug).
-	// Inserting into the correct parent preserves inline elements (<em>, <strong>, <a>, etc.).
-	const textNodes: Text[] = []
-	;(function collectTextNodes(node: Node) {
+	// Capture the element's existing letter-spacing as the settled baseline.
+	// This way we respect any CSS letter-spacing already applied to the element
+	// and treat it as the 0-point rather than overriding it with literal 0em.
+	const computedStyle = getComputedStyle(element)
+	const fontSizePx    = parseFloat(computedStyle.fontSize) || 16
+	const originalLSPx  = parseFloat(computedStyle.letterSpacing) || 0
+	const originalLSEm  = originalLSPx / fontSizePx
+
+	// --- Pass 2: Content collection ---
+	// Collect text nodes AND atomic inline elements via recursive childNodes walk
+	// (NOT createTreeWalker — happy-dom bug skips inline ancestors like <em>, <strong>).
+	// Atomic tags (img, svg, etc.) are treated as indivisible units: wrapped in a word
+	// span in place so they participate in BCR line detection and buildLineHTML correctly.
+	const items: CollectedItem[] = []
+	;(function collectItems(node: Node) {
 		if (node.nodeType === Node.TEXT_NODE) {
-			textNodes.push(node as Text)
-		} else {
-			node.childNodes.forEach(collectTextNodes)
+			items.push({ type: 'text', node: node as Text })
+		} else if (node.nodeType === Node.ELEMENT_NODE) {
+			const el = node as HTMLElement
+			if (ATOMIC_TAGS.has(el.tagName.toLowerCase())) {
+				items.push({ type: 'atomic', el })
+			} else {
+				node.childNodes.forEach(collectItems)
+			}
 		}
 	})(element)
 
 	const wordSpans: HTMLElement[] = []
 
-	for (const textNode of textNodes) {
+	for (const item of items) {
+		if (item.type === 'atomic') {
+			// Wrap the atomic element in a word span in place
+			const span = document.createElement('span')
+			span.className = SETTLE_CLASSES.word
+			item.el.parentNode!.insertBefore(span, item.el)
+			span.appendChild(item.el)
+			wordSpans.push(span)
+			continue
+		}
+
+		const textNode = item.node
 		const text = textNode.textContent ?? ''
 		if (!text) continue
 
@@ -225,7 +258,13 @@ export function applySettle(
 		if (cached && cached.originalHTML === originalHTML) {
 			prepared = cached.prepared
 		} else {
-			prepared = _pretext!.prepareWithSegments(element.textContent ?? '', getCanvasFont(element))
+			// Use per-span computed fonts for canvas measurement so mixed-size inline
+			// elements (e.g. a <code> with smaller font-size) are measured correctly.
+			// Fall back to root element font for spans that haven't rendered yet.
+			const spanFonts = wordSpans.map((s) => getCanvasFont(s))
+			const rootFont = getCanvasFont(element)
+			const representativeFont = spanFonts[0] ?? rootFont
+			prepared = _pretext!.prepareWithSegments(element.textContent ?? '', representativeFont)
 			pretextCache.set(element, { originalHTML, prepared })
 		}
 		const { lines: pretextLines } = _pretext!.layoutWithLines(prepared, element.offsetWidth, getLineHeightPx(element))
@@ -249,9 +288,9 @@ export function applySettle(
 		}
 	} else {
 		// BCR path — batch all reads before any writes.
-		// Round top values to integer pixels before comparing — subpixel BCR values differ
-		// across browsers (Chrome/Firefox/Safari) and can cause same-line words to appear
-		// on different lines if compared as raw floats.
+		// Normalize top by element line-height before rounding so mixed font-sizes
+		// (e.g. <code> at text-xs inside a text-sm paragraph) don't straddle a line
+		// boundary due to subpixel top differences that are smaller than the line-height step.
 		const elementTop = element.getBoundingClientRect().top
 		const lhPx = getLineHeightPx(element)
 		const wordTops = wordSpans.map((w) =>
@@ -349,19 +388,23 @@ export function applySettle(
 		? rawOffsets.map((o) => -Math.abs(o))
 		: rawOffsets
 
-	// Write phase — replace element content with line spans
+	// Write phase — replace element content with line spans.
+	// The settled target for each line is originalLSEm + targetTracking adjustment.
+	// The initial spacing starts from that target ± the random spread offset.
+	// We emit "0" rather than "0.0000em" when the value is exactly zero for cleaner markup.
 	let newHTML = ''
 	for (let i = 0; i < lines.length; i++) {
-		const target         = targetTrackingValues ? targetTrackingValues[i] : 0
-		// compress: start from target minus the spread offset (below natural spacing)
-		// expand:   start from target plus the spread offset (above natural spacing)
-		const initialSpacing = direction === 'compress'
-			? (target - Math.abs(offsets[i])).toFixed(5)
-			: (target + offsets[i]).toFixed(5)
+		const trackingAdj    = targetTrackingValues ? targetTrackingValues[i] : 0
+		const settledValue   = originalLSEm + trackingAdj
+		// compress: start below settled value; expand: start above settled value
+		const rawInitial     = direction === 'compress'
+			? settledValue - Math.abs(offsets[i])
+			: settledValue + offsets[i]
+		const initialStr     = rawInitial === 0 ? '0' : `${rawInitial.toFixed(4)}em`
 		const delay          = stagger > 0 ? `transition-delay:${i * stagger}ms;` : ''
 		const transitionStyle = `transition:letter-spacing ${duration}ms ${easing};${delay}`
 		newHTML +=
-			`<span class="${SETTLE_CLASSES.line}" style="display:inline-block;white-space:nowrap;letter-spacing:${initialSpacing}em;${transitionStyle}">${lineHTMLs[i]}</span>`
+			`<span class="${SETTLE_CLASSES.line}" style="display:inline-block;white-space:nowrap;letter-spacing:${initialStr};${transitionStyle}">${lineHTMLs[i]}</span>`
 		if (i < lines.length - 1) {
 			newHTML += `<br data-settle-br>`
 		}
@@ -376,12 +419,13 @@ export function applySettle(
 
 	// --- Pass 5: Transition trigger ---
 	// One rAF lets the browser paint the initial offset state, then setting
-	// letter-spacing to the target triggers the CSS transition → lines ease to equilibrium.
-	// Target is 0em by default; density-equalized values when targetTracking is set.
+	// letter-spacing to the settled target triggers the CSS transition.
+	// Settled target = originalLSEm + per-line density adjustment (if any).
 	requestAnimationFrame(() => {
 		lineSpans.forEach((span, i) => {
-			const target = targetTrackingValues ? targetTrackingValues[i] : 0
-			span.style.letterSpacing = `${target.toFixed(5)}em`
+			const trackingAdj  = targetTrackingValues ? targetTrackingValues[i] : 0
+			const settledValue = originalLSEm + trackingAdj
+			span.style.letterSpacing = settledValue === 0 ? '0' : `${settledValue.toFixed(4)}em`
 		})
 
 		// Restore scroll position after DOM mutations (inner rAF for scroll restore)
@@ -405,7 +449,9 @@ export function removeSettle(element: HTMLElement, originalHTML: string): void {
 
 /**
  * Resets the element to its original HTML and re-runs the settle animation.
- * Equivalent to calling removeSettle followed by applySettle.
+ * When options.quietReplay is true and stagger > 0, avoids the simultaneous all-lines
+ * flash: instead each line briefly offsets from its settled state and eases back,
+ * staggered across lines. Falls back to normal applySettle when stagger is 0.
  *
  * @param element      - The live DOM element to animate
  * @param originalHTML - HTML snapshot taken before the first applySettle call
@@ -416,6 +462,59 @@ export function replaySettle(
 	originalHTML: string,
 	options: SettleOptions = {},
 ): void {
-	removeSettle(element, originalHTML)
-	applySettle(element, originalHTML, options)
+	const stagger     = options.stagger ?? DEFAULTS.stagger
+	const quietReplay = options.quietReplay ?? false
+
+	if (!quietReplay || stagger === 0) {
+		removeSettle(element, originalHTML)
+		applySettle(element, originalHTML, options)
+		return
+	}
+
+	// quietReplay with stagger > 0:
+	// Find the existing line spans (already settled from a prior run), then
+	// per-line: snap to offset, remove transition, let browser paint; then
+	// restore transition and snap back to settled — all staggered.
+	// If there are no existing line spans (e.g. first run), fall back to normal.
+	const existingLineSpans = element.querySelectorAll<HTMLElement>(`.${SETTLE_CLASSES.line}`)
+	if (existingLineSpans.length === 0) {
+		removeSettle(element, originalHTML)
+		applySettle(element, originalHTML, options)
+		return
+	}
+
+	const spread   = options.spread   ?? DEFAULTS.spread
+	const duration = options.duration ?? DEFAULTS.duration
+	const easing   = options.easing   ?? DEFAULTS.easing
+	const direction = options.direction ?? 'expand'
+
+	// Read the current settled letter-spacing for each line before mutating anything
+	const settledValues = Array.from(existingLineSpans).map((span) => {
+		const ls = getComputedStyle(span).letterSpacing
+		const px = parseFloat(ls) || 0
+		// Convert back to em relative to span's own font-size
+		const fs = parseFloat(getComputedStyle(span).fontSize) || 16
+		return px / fs
+	})
+
+	existingLineSpans.forEach((span, i) => {
+		const delay = i * stagger
+
+		setTimeout(() => {
+			const settledEm = settledValues[i]
+			const rawOffset = (Math.random() * 2 - 1) * spread
+			const offset    = direction === 'compress' ? -Math.abs(rawOffset) : rawOffset
+			const offsetEm  = settledEm + offset
+
+			// Snap to offset without a transition
+			span.style.transition = 'none'
+			span.style.letterSpacing = offsetEm === 0 ? '0' : `${offsetEm.toFixed(4)}em`
+
+			// One rAF so the browser paints the offset state before re-enabling transition
+			requestAnimationFrame(() => {
+				span.style.transition = `letter-spacing ${duration}ms ${easing}`
+				span.style.letterSpacing = settledEm === 0 ? '0' : `${settledEm.toFixed(4)}em`
+			})
+		}, delay)
+	})
 }
