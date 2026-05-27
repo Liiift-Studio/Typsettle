@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 		description: "Paragraph text enters from randomised per-line letter-spacing and settles into place. Stagger, replay, and intersection trigger built in.",
 	},
 	metadataBase: new URL("https://typsettle.com"),
+	alternates: { canonical: "https://typsettle.com" },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
