@@ -34,10 +34,14 @@ export function useSettle(options: UseSettleOptions = {}) {
 		return false
 	}, [])
 
-	const { spread, duration, stagger, active, intersect } = options
+	const { intersect } = options
 
 	const hasSettledOnce = useRef(false)
 
+	// All animation options (spread, duration, easing, direction, etc.) are read from
+	// optionsRef.current inside run, so they do not belong in the dependency array.
+	// Only shouldSkip is listed because it also reads from optionsRef and is a stable
+	// useCallback itself — omitting it would cause run to capture a stale shouldSkip.
 	const run = useCallback(() => {
 		const el = ref.current
 		if (!el) return
@@ -54,7 +58,7 @@ export function useSettle(options: UseSettleOptions = {}) {
 
 		applySettle(el, originalHTMLRef.current, optionsRef.current)
 		hasSettledOnce.current = true
-	}, [shouldSkip, spread, duration, stagger, active])
+	}, [shouldSkip])
 
 	// Tracks the cancel function returned by the most recent replaySettle call.
 	const cancelReplayRef = useRef<(() => void) | null>(null)
@@ -86,7 +90,8 @@ export function useSettle(options: UseSettleOptions = {}) {
 			cancelAnimationFrame(rafId)
 			rafId = requestAnimationFrame(run)
 		})
-		ro.observe(ref.current!)
+		if (!ref.current) return
+		ro.observe(ref.current)
 		return () => {
 			ro.disconnect()
 			cancelAnimationFrame(rafId)

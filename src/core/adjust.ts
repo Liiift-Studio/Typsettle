@@ -14,7 +14,8 @@ let _pretextLoading = false
 function tryLoadPretext(): void {
 	if (_pretext !== null || _pretextLoading) return
 	_pretextLoading = true
-	import('@chenglou/pretext' as string)
+	// @ts-ignore — optional peer dep; suppress "cannot find module" without a declaration stub
+	import(/* @vite-ignore */ '@chenglou/pretext')
 		.then((m) => { _pretext = m as PretextModule })
 		.catch(() => {
 			console.warn('[typsettle] canvas lineDetection requires @chenglou/pretext — falling back to BCR')
