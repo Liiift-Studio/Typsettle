@@ -5,7 +5,7 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 export const metadata: Metadata = {
-	title: "Typsettle — Page-load text animation to optical equilibrium | Type Tools",
+	title: "Typsettle — Page-load text animation to optical equilibrium",
 	icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
 	description: "Typsettle animates paragraph text from randomised per-line letter-spacing to optical equilibrium on page load. A typographic entrance animation with stagger and replay support.",
 	keywords: ["typsettle", "page load animation", "entrance animation", "letter spacing", "typography", "typesetting", "text animation", "variable font", "TypeScript", "npm", "react"],
@@ -19,7 +19,8 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "Typsettle — Page-load text animation to optical equilibrium",
-		description: "Paragraph text enters from randomised per-line letter-spacing and settles into place. Stagger, replay, and intersection trigger built in.",
+		description: "Paragraph text enters from randomised per-line letter-spacing and settles into place. Stagger, replay, intersection trigger, and density equalisation built in.",
+		site: "@liiift",
 	},
 	metadataBase: new URL("https://typsettle.com"),
 	alternates: { canonical: "https://typsettle.com" },

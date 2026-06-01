@@ -2,16 +2,23 @@ import { ImageResponse } from 'next/og'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export const alt = 'Settle — Page-load text animation to optical equilibrium'
+export const alt = 'Typsettle — Page-load text animation to optical equilibrium'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+/** Module-level cache — avoids repeated fs I/O on warm edge invocations */
+let _interLight: Buffer | null = null
+async function getInterLight(): Promise<Buffer> {
+	if (!_interLight) _interLight = await readFile(join(process.cwd(), 'public/fonts/inter-300.woff'))
+	return _interLight
+}
+
 export default async function Image() {
-	const interLight = await readFile(join(process.cwd(), 'public/fonts/inter-300.woff'))
+	const interLight = await getInterLight()
 	return new ImageResponse(
 		(
 			<div style={{ background: '#0c0c0c', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 80px', fontFamily: 'Inter, sans-serif' }}>
-				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>settle</span>
+				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>typsettle</span>
 				<div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 48 }}>
 						{[0.28, 0.2, 0.13, 0.08, 0.04].map((spacing, i) => (

@@ -5,7 +5,6 @@ import ToolDirectory from "@/components/ToolDirectory"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import SiteFooter from "../components/SiteFooter"
-import { MagnetChar } from "@liiift-studio/magnettype"
 
 export default function Home() {
 	return (
@@ -16,8 +15,8 @@ export default function Home() {
 				<div className="flex flex-col gap-2">
 					<p className="text-xs uppercase tracking-widest opacity-50">typsettle</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Settle,</MagnetChar><br />
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ opacity: 0.5, fontStyle: "italic" }}>into place.</MagnetChar>
+						<span>Settle,</span><br />
+						<span style={{ opacity: 0.5, fontStyle: "italic" }}>into place.</span>
 					</h1>
 				</div>
 				<div className="flex items-center gap-4">
@@ -34,7 +33,7 @@ export default function Home() {
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
-				<p className="text-xs uppercase tracking-widest opacity-50">Live demo</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">Live demo</h2>
 				<div className="rounded-xl -mx-8 px-8 py-8" style={{ background: "rgba(0,0,0,0.25)", overflow: 'hidden' }}>
 					<Demo />
 				</div>
@@ -42,7 +41,7 @@ export default function Home() {
 
 			{/* Explanation */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<p className="text-xs uppercase tracking-widest opacity-50">How it works</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">How it works</h2>
 				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">The entrance</p>
@@ -58,7 +57,7 @@ export default function Home() {
 			{/* Usage */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex items-baseline gap-4">
-					<p className="text-xs uppercase tracking-widest opacity-50">Usage</p>
+					<h2 className="text-xs uppercase tracking-widest opacity-50">Usage</h2>
 				</div>
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
@@ -93,14 +92,15 @@ applySettle(el, original, { spread: 0.04, duration: 800, stagger: 80 })
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
 						<table className="w-full text-xs">
-							<thead><tr className="opacity-50 text-left"><th className="pb-2 pr-6 font-normal">Option</th><th className="pb-2 pr-6 font-normal">Default</th><th className="pb-2 font-normal">Description</th></tr></thead>
+							<caption className="sr-only">SettleText / useSettle / applySettle options reference</caption>
+							<thead><tr className="opacity-50 text-left"><th scope="col" className="pb-2 pr-6 font-semibold">Option</th><th scope="col" className="pb-2 pr-6 font-semibold">Default</th><th scope="col" className="pb-2 font-semibold">Description</th></tr></thead>
 							<tbody className="opacity-70">
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">spread</td><td className="py-2 pr-6">0.04</td><td className="py-2">Max initial letter-spacing offset in em.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">duration</td><td className="py-2 pr-6">800</td><td className="py-2">Transition duration in milliseconds.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">easing</td><td className="py-2 pr-6 font-mono text-xs">&apos;cubic-bezier(0.25, 0.1, 0.25, 1)&apos;</td><td className="py-2">CSS easing string.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">stagger</td><td className="py-2 pr-6">0</td><td className="py-2">Delay between lines in ms. 0 = all settle together.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">active</td><td className="py-2 pr-6">true</td><td className="py-2">Set false to skip animation entirely.</td></tr>
-								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">targetTracking</td><td className="py-2 pr-6">—</td><td className="py-2">Additional letter-spacing each line settles to, in em, on top of the element&apos;s existing CSS tracking. Omit for natural spacing. Pass a number for a consistent loose or tight equilibrium. &apos;auto&apos; measures per-line optical density and adjusts each line&apos;s target to equalise density across the paragraph — dense lines get more tracking, sparse lines less, clamped to ±0.05em.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">targetTracking</td><td className="py-2 pr-6">—</td><td className="py-2">Letter-spacing each line settles to, in em. When omitted, lines settle to 0em (the element&apos;s natural spacing). Pass a number for a consistent loose or tight equilibrium. &apos;auto&apos; measures per-line optical density and adjusts each line&apos;s target to equalise density across the paragraph — dense lines get more tracking, sparse lines less, clamped to ±0.05em.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">direction</td><td className="py-2 pr-6">&apos;expand&apos;</td><td className="py-2">&apos;expand&apos; — lines start wide and ease to natural. &apos;compress&apos; — lines start at zero tracking and ease outward.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">intersect</td><td className="py-2 pr-6">false</td><td className="py-2">When true, re-runs the animation each time the element scrolls into view.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">quietReplay</td><td className="py-2 pr-6">false</td><td className="py-2">When true, replays stagger each line individually (offset then settle) instead of flashing all lines simultaneously. Has no effect when stagger is 0.</td></tr>
