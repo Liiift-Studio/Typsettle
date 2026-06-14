@@ -5,7 +5,7 @@ import { SettleText } from "@liiift-studio/typsettle"
 
 const PARAGRAPHS = [
 	`The first thing a reader notices about a text is not the words but the colour — the even grey field of the paragraph taken as a whole. Before meaning, before syntax, there is that impression: light, dark, dense, airy. The typographer works to make it even, to give the reader a surface to move across without resistance. A page-load animation that begins in chaos and resolves into order says something about the text it introduces: that it knows where it is going.`,
-	`Tracking — the spacing between letters across a whole word or line — is the most delicate of the compositor’s instruments. Too tight and letters close against each other; too loose and words fragment. The right amount is invisible.`,
+	`Tracking — the spacing between letters across a whole word or line — is the most delicate of the compositor's instruments. Too tight and letters close against each other; too loose and words fragment. The right amount is invisible.`,
 ]
 
 function Slider({ label, value, min, max, step, onChange, title }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; title?: string }) {
@@ -15,9 +15,9 @@ function Slider({ label, value, min, max, step, onChange, title }: { label: stri
 	const displayValue = Number.isInteger(step) ? value : parseFloat(value.toPrecision(4))
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs uppercase tracking-widest opacity-50">{label}</span>
+			<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted">{label}</span>
 			<input type="range" min={min} max={max} step={step} value={value} aria-label={label} aria-describedby={valueId} title={title} onChange={e => onChange(Number(e.target.value))} onTouchStart={e => e.stopPropagation()} style={{ touchAction: 'none' }} />
-			<span id={valueId} className="tabular-nums text-xs opacity-50 text-right" aria-live="polite">{displayValue}</span>
+			<span id={valueId} className="tabular-nums text-xs text-muted text-right" aria-live="polite">{displayValue}</span>
 		</div>
 	)
 }
@@ -124,11 +124,11 @@ export default function Demo() {
 				<Slider label="Stagger (ms)" value={stagger} min={0} max={300} step={10} onChange={setStagger} title="Delay between each line's animation start — 0 = all lines settle together, higher = sequential wave" />
 			</div>
 			<div className="flex flex-wrap items-center gap-3 mb-4">
-				<span className="text-xs uppercase tracking-widest opacity-50">Easing</span>
+				<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted">Easing</span>
 				{EASING_OPTIONS.map(({ label, value }) => (
 					<button key={value} onClick={() => { setEasing(value); replay() }} aria-pressed={easing === value} title={`Use the ${label} acceleration curve for the settling transition`} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: easing === value ? 1 : 0.5, background: easing === value ? 'var(--btn-bg)' : 'transparent' }}>{label}</button>
 				))}
-				<span className="text-xs uppercase tracking-widest opacity-50 ml-4">Direction</span>
+				<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted ml-4">Direction</span>
 				{(['expand', 'compress'] as const).map(v => (
 					<button key={v} onClick={() => { setDirection(v); replay() }} aria-pressed={direction === v} title={v === 'expand' ? 'Lines start wide (tracked out) and settle inward to normal spacing' : 'Lines start tight (tracked in) and open outward to normal spacing'} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: direction === v ? 1 : 0.5, background: direction === v ? 'var(--btn-bg)' : 'transparent' }}>{v}</button>
 				))}
@@ -179,7 +179,7 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={handleToggleCompare} />
 			</div>
-			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }} aria-live="polite">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
+			<p className="text-xs text-muted italic mt-8" style={{ lineHeight: "1.8" }} aria-live="polite">Text enters from randomised tracking and settles to equilibrium. Each line is staggered by {stagger}ms.</p>
 		</div>
 	)
 }
