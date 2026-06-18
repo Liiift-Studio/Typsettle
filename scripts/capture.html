@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>typsettle capture</title>
+		<style>
+			/* Merriweather served locally from the site's public fonts. */
+			@font-face {
+				font-family: "Merriweather";
+				src: url("/site/public/fonts/Merriweather.woff2") format("woff2");
+				font-weight: 300 900;
+				font-style: normal;
+				font-display: block;
+			}
+			* { box-sizing: border-box; }
+			body {
+				margin: 0;
+				background: transparent;
+				font-family: "Merriweather", Georgia, serif;
+			}
+			/* The card the README hero is shot from. Theme matches typsettle.com. */
+			#card {
+				width: 920px;
+				padding: 56px 64px;
+				border-radius: 16px;
+				background: #1a0d2e;
+				color: #ece4f7;
+			}
+			#card .eyebrow {
+				font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+				letter-spacing: 0.18em;
+				text-transform: uppercase;
+				color: #b79be0;
+				margin: 0 0 22px;
+			}
+			#para {
+				font-size: 27px;
+				line-height: 1.5;
+				font-weight: 400;
+				margin: 0;
+				/* nowrap-free; the algorithm reads natural line breaks */
+			}
+		</style>
+		<!-- dist/index.js bare-imports react/react-dom for its hook + component.
+		     The capture only exercises the framework-agnostic core (applySettle,
+		     getCleanHTML), which never touches React, so we satisfy the specifiers
+		     with empty stub modules via an import map. -->
+		<script type="importmap">
+			{
+				"imports": {
+					"react": "/scripts/react-stub.js",
+					"react-dom": "/scripts/react-stub.js",
+					"react/jsx-runtime": "/scripts/react-stub.js"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="card">
+			<p class="eyebrow">typsettle</p>
+			<p id="para">Paragraph text enters from randomised letter-spacing and eases to optical equilibrium &mdash; a page-load animation that feels typographic rather than decorative. Lines staggered, motion purposeful, like watching a compositor tune a paragraph into place.</p>
+		</div>
+		<script type="module">
+			// Import the built library (applySettle drives the per-line settle).
+			import { applySettle, getCleanHTML } from "/dist/index.js";
+
+			const el = document.getElementById("para");
+			const original = getCleanHTML(el);
+
+			// Settle to equilibrium for the static hero still.
+			window.__settleStill = () => {
+				applySettle(el, original, { spread: 0.12, duration: 0, stagger: 0 });
+			};
+
+			// --- Deterministic, clock-independent frame driver for the GIF. ---
+			// CSS transitions advance on the browser's wall clock, which is unreliable
+			// to sample frame-by-frame under headless screenshots. Instead we let
+			// applySettle build the per-line spans (so line breaks are real layout),
+			// then disable the CSS transition and drive each line's letter-spacing
+			// ourselves from a normalised time t∈[0,1], with a per-line stagger.
+			const SPREAD = 0.14;      // em — initial offset magnitude
+			const STAGGER_FRAC = 0.16; // fraction of timeline each successive line is delayed
+			let _lineOffsets = [];
+
+			function easeOutQuint(x) { return 1 - Math.pow(1 - x, 5); }
+
+			window.__prepareSettle = () => {
+				// Build line spans at equilibrium, then read them back.
+				applySettle(el, original, { spread: 0, duration: 0, stagger: 0 });
+				const spans = [...el.querySelectorAll(".settle-line")];
+				_lineOffsets = spans.map((s, i) => {
+					s.style.transition = "none";          // we drive it manually
+					s.style.display = "inline-block";
+					s.style.whiteSpace = "nowrap";
+					// Alternate sign so adjacent lines visibly diverge then converge.
+					const sign = i % 2 === 0 ? 1 : -1;
+					return { span: s, offset: sign * SPREAD * (0.6 + 0.4 * ((i * 37) % 7) / 6) };
+				});
+				return _lineOffsets.length;
+			};
+
+			// t in [0,1] across the whole animation; each line interpolates from its
+			// offset to 0em over its own staggered sub-window.
+			window.__settleFrame = (t) => {
+				const n = _lineOffsets.length;
+				_lineOffsets.forEach(({ span, offset }, i) => {
+					const start = (i * STAGGER_FRAC) / (1 + (n - 1) * STAGGER_FRAC);
+					const span_len = 1 / (1 + (n - 1) * STAGGER_FRAC);
+					let local = (t - start) / span_len;
+					local = Math.max(0, Math.min(1, local));
+					const eased = easeOutQuint(local);
+					const ls = offset * (1 - eased);
+					span.style.letterSpacing = ls === 0 ? "0" : ls.toFixed(4) + "em";
+				});
+			};
+
+			window.__ready = document.fonts.ready;
+		</script>
+	</body>
+</html>

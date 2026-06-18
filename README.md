@@ -4,9 +4,13 @@
 
 Paragraph text enters from randomised letter-spacing and transitions to optical equilibrium. A page-load animation that feels typographic rather than decorative — lines staggered, motion purposeful. Like watching a compositor tune a paragraph. Respects `prefers-reduced-motion`.
 
+![Each line of a paragraph starts at a random letter-spacing offset and eases independently to its settled tracking, staggered line by line.](https://raw.githubusercontent.com/Liiift-Studio/Typsettle/main/assets/settle.gif?v=1)
+
+> Each line starts at a random tracking offset and eases to its settled spacing, staggered line by line. ([live demo](https://typsettle.com))
+
 **[typsettle.com](https://typsettle.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/typsettle) · [GitHub](https://github.com/Liiift-Studio/Typsettle)
 
-TypeScript · Zero dependencies · React + Vanilla JS
+TypeScript · Zero runtime dependencies (~4 kB gzip) · React + Vanilla JS
 
 ---
 
@@ -25,6 +29,8 @@ npm install @liiift-studio/typsettle
 ### React component
 
 ```tsx
+'use client'
+
 import { SettleText } from '@liiift-studio/typsettle'
 
 <SettleText spread={0.04} duration={800} stagger={80}>
@@ -35,11 +41,34 @@ import { SettleText } from '@liiift-studio/typsettle'
 ### React hook
 
 ```tsx
+'use client'
+
 import { useSettle } from '@liiift-studio/typsettle'
 
 // Inside a React component:
 const { ref, replay } = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
-return <p ref={ref}>{children}</p>
+return <p ref={ref}>Your paragraph text here...</p>
+```
+
+The hook returns a `replay` function so you can re-run the settle on demand — here, a complete component with a replay button:
+
+```tsx
+'use client'
+
+import { useSettle } from '@liiift-studio/typsettle'
+
+export function SettlingParagraph() {
+  const { ref, replay } = useSettle({ spread: 0.04, duration: 800, stagger: 80 })
+  return (
+    <>
+      <p ref={ref}>
+        Paragraph text enters from randomised letter-spacing and eases to
+        optical equilibrium.
+      </p>
+      <button onClick={replay}>Replay</button>
+    </>
+  )
+}
 ```
 
 ### Vanilla JS
@@ -74,6 +103,16 @@ import type { SettleOptions } from '@liiift-studio/typsettle'
 
 const opts: SettleOptions = { spread: 0.04, duration: 800, stagger: 80, active: true }
 ```
+
+---
+
+## SSR & Next.js
+
+The animation is **client-only by design** — it reads live browser layout to detect line breaks, so it never runs on the server. Render your text normally (it ships as plain markup, fully indexable and accessible), and the settle wraps and animates it after mount:
+
+- **No hydration mismatch.** The server emits your original paragraph markup; line-wrapping and the random per-line offsets are applied client-side in a layout effect, *after* React has hydrated. There is nothing random in the server output to mismatch.
+- **`"use client"` required.** Any file importing from this package must be a Client Component in the App Router (the package touches `window`, `requestAnimationFrame`, and `matchMedia`).
+- **Settled is the resting state.** If JS never runs, or `prefers-reduced-motion: reduce` is set, the reader simply sees the paragraph at its natural spacing — the animation degrades to nothing, not to broken markup.
 
 ---
 
@@ -149,8 +188,8 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 ## Future improvements
 
 - **Variable font axis settle** — settle `wdth` or `wght` instead of (or alongside) letter-spacing, for fonts where axis variation reads more clearly at large sizes
-- **Random seed** — accept a `seed` option for deterministic random offsets, so SSR-rendered markup matches the client hydration state
+- **Random seed** — accept a `seed` option for deterministic random offsets, so repeated runs and snapshot tests reproduce the same starting state (the offsets are applied client-side after hydration, so this is for reproducibility, not for resolving any SSR mismatch — see [SSR & Next.js](#ssr--nextjs))
 
 ---
 
-Current version: 1.0.17
+Current version: 1.0.19
