@@ -19,7 +19,7 @@ export default async function Image() {
 	const interLight = await getInterLight()
 	return new ImageResponse(
 		(
-			<div style={{ background: '#f8feb2', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 80px', fontFamily: 'Inter, sans-serif' }}>
+			<div style={{ background: '#f0f88d', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 80px', fontFamily: 'Inter, sans-serif' }}>
 				{/* Label */}
 				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#4d4f3c', textTransform: 'uppercase' }}>typsettle</span>
 
